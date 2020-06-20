@@ -39,7 +39,7 @@ class Hud {
                 this.pushTransforms()
                 this.translate(circle.x, circle.y)
                 val subTime = time * 0.125
-                var index = (subTime).toInt()
+                var index = (subTime).toInt() * 3
                 for (section in circle.sections) {
                     section.draw(
                         this, mappings[++index % mappings.size]
