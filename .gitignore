@@ -3,5 +3,6 @@ build
 out
 .idea
 .gradle
-/ffmpegOutput.txt
 /tmp/
+/ffmpegOutput.txt
+/ShaderError.txt

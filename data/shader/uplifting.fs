@@ -5,20 +5,20 @@ float sdRoundBox(vec2 p, vec2 b, float r) {
   return length(max(q,0.)) + min(max(q.x,q.y),0.) - r;
 }
 void mainImage(out vec4 O, vec2 u) {
-    O = vec4(0.0, 0.0, 0.0, 1.0);
+    O = vec4(0);
     vec2  R = iResolution.xy,
           U = (u - R*.5) / R.y;
     float t = -iTime;
-    U.x += sin(t*0.015625*3.14159)*.25;
-    U.y += sin(t*0.015625*3.14159*2.0)*.25;
-    for(float i = 0. ; i < 1. ; i += .2) {
-        float u = fract(t*.125+i),
-              q = rand(i+10.)*8. + u*2. + sin(t*0.0625*3.14159)*2.;
-        vec2  P = U *u*90. * mat2(cos(q), -sin(q), sin(q), cos(q)),
-              f = 2.*fract(P)-1.;
-        float rn = rand(floor(P)),
-              c = pow(abs(sin((iTime*0.0625+rn)*3.14159)),32.),
-              s = smoothstep(.1,.01, length(f) - c);
+    U.x += sin(t*6.2831853)*.50;
+    U.y += sin(t*6.2831853)*.50;
+    for(float i = 0. ; i < 1. ; i += .125) {
+        float u = fract(t+i),
+              q = rand(i+8.)*8. + u*2. + sin(t*6.2831853)*2.;
+        vec2 P = U * u * 64. * mat2(cos(q), -sin(q), sin(q), cos(q));
+        vec2 f = 2.*fract(P)-1.;
+        float rn = rand(floor(P));
+        float c = pow(abs(sin((iTime*.5+rn)*6.2831853)),32.);
+        float s = smoothstep(.1,.01, length(f) - c);
         O = max(O, vec4(1,1,.2*c,1) *s*(1.-u));
     }
 }
