@@ -2,6 +2,8 @@ package draw
 
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
+import org.openrndr.draw.LineCap
+import org.openrndr.draw.LineJoin
 import org.openrndr.shape.ContourBuilder
 import org.openrndr.shape.ShapeContour
 
@@ -20,6 +22,9 @@ class Cross(radius: Double) : Hud.Element() {
     companion object {
         fun Drawer.draw(crosses: List<Cross>, rgBa: ColorRGBa) {
             this.stroke = rgBa
+            this.strokeWeight = 1.0
+            this.lineCap = LineCap.BUTT
+            this.lineJoin = LineJoin.MITER
             this.fill = null
             for (cross in crosses) {
                 this.pushTransforms()

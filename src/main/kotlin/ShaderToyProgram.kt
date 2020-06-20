@@ -7,6 +7,7 @@ fun main() {
         configure {
             width = 720
             height = 720
+            title = "Shadertoy"
             //fullscreen = Fullscreen.SET_DISPLAY_MODE
         }
         program {

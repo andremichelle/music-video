@@ -50,17 +50,22 @@ class Hud {
             }
 
             private val mappings: List<(Double) -> Double> = listOf(
-                { time -> time - floor(time) },
-                { time -> (1.0 - (time - floor(time))).pow(4.0) },
-                { time -> (1.0 - (time - floor(time))).pow(2.0) },
-                { time -> abs(sin(time * PI)) },
-                { time -> 1.0 - min(1.0, 2.0 * (2.0 * time - floor(2.0 * time))) },
-                fun(time: Double): Double {
-                    val l = 4
-                    val w = { x: Double -> max(2 * x - 1.0, 0.0) }
-                    return (w.invoke(mod(time * l, 1.0)) + floor(time * l)) / l
-                }
+                { x -> x - floor(x) }, // linear
+                accelerateAndStop(4.0),
+                accelerateAndStop(2.0),
+                { x -> abs(sin(x * PI)) },
+                { x -> 1.0 - min(1.0, 2.0 * (2.0 * x - floor(2.0 * x))) },
+                stopAndGo(4),
+                stopAndGo(8),
+                stopAndGo(16)
             )
+
+            private fun accelerateAndStop(exp2: Double) = { x: Double -> ((x - floor(x))).pow(exp2) }
+
+            private fun stopAndGo(l: Int): (Double) -> Double {
+                val w = { x: Double -> max(2.0 * x - 1.0, 0.0) }
+                return { x -> (w.invoke(mod(x * l, 1.0)) + floor(x * l)) / l }
+            }
         }
 
         override fun move(x: Double, y: Double): Circle {
@@ -83,14 +88,15 @@ class Hud {
         ) {
             companion object {
                 fun create(random: Random, r0: Double, r1: Double): Section {
-                    val numSections = 1 shl (random.nextInt(6) + 1)
+                    val numSections = 1 shl (random.nextInt(5) + 1)
                     val lengthRatio =
-                        if (random.nextBoolean())
-                            2.0.pow(-1 - random.nextInt(5).toDouble())
-                        else
-                            1.0 - 2.0.pow(-1 - random.nextInt(2).toDouble())
+                        if (random.nextBoolean()) {
+                            2.0.pow(-1 - random.nextInt(4).toDouble())
+                        } else {
+                            0.75
+                        }
                     val widthRatio = 2.0.pow(-random.nextInt(random.nextInt(2) + 1).toDouble())
-                    val arcRatio = if (random.nextInt(4) == 0) {
+                    val arcRatio = if (random.nextInt(3) == 0) {
                         // create some nice rational number
                         val d = random.nextInt(4) + 1
                         val n = random.nextInt(d) + 1
