@@ -26,11 +26,11 @@ class ShaderToy(fsCode: String) {
                 """
 
         private const val pre_fsCode = """
-                #version 330
-                in vec4 gl_FragCoord;
-                out vec4 o_output;
-                uniform float iTime;
-                uniform vec2 iResolution;
+            #version 330
+            in vec4 gl_FragCoord;
+            out vec4 o_output;
+            uniform float iTime;
+            uniform vec2 iResolution;
         """
 
         private const val after_fsCode = """

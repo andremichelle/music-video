@@ -1,6 +1,9 @@
 package draw
 
+import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
+import org.openrndr.draw.LineCap
+import org.openrndr.draw.LineJoin
 import org.openrndr.math.mod
 import org.openrndr.shape.Circle
 import org.openrndr.shape.Shape
@@ -22,7 +25,17 @@ class Hud {
 
     class Circle(random: Random, n: Int, r0: Double, r1: Double) : Element() {
         companion object {
+            fun Drawer.draw(circles: List<Circle>, time: Double) {
+                for (circle in circles) {
+                    this.draw(circle, time)
+                }
+            }
+
             fun Drawer.draw(circle: Circle, time: Double) {
+                this.stroke = ColorRGBa.fromHex(0x0EC5FF)
+                this.fill = null
+                this.lineCap = LineCap.BUTT
+                this.lineJoin = LineJoin.MITER
                 this.pushTransforms()
                 this.translate(circle.x, circle.y)
                 val subTime = time * 0.125
@@ -30,7 +43,7 @@ class Hud {
                 for (section in circle.sections) {
                     section.draw(
                         this, mappings[++index % mappings.size]
-                            .invoke(if ((index and 1) == 1) subTime else 1.0 - subTime) * 180.0
+                            .invoke(if ((index and 1) == 1) subTime else 1.0 - subTime) * 360.0
                     )
                 }
                 this.popTransforms()
@@ -63,9 +76,10 @@ class Hud {
             numSections: Int,
             lengthRatio: Double,
             widthRatio: Double,
+            arcRatio: Double,
+            startAngle: Double = 0.0,
             r0: Double,
-            r1: Double,
-            startAngle: Double = 0.0
+            r1: Double
         ) {
             companion object {
                 fun create(random: Random, r0: Double, r1: Double): Section {
@@ -76,19 +90,29 @@ class Hud {
                         else
                             1.0 - 2.0.pow(-1 - random.nextInt(2).toDouble())
                     val widthRatio = 2.0.pow(-random.nextInt(random.nextInt(2) + 1).toDouble())
-                    return Section(numSections, lengthRatio, widthRatio, r0, r1)
+                    val arcRatio = if (random.nextInt(4) == 0) {
+                        // create some nice rational number
+                        val d = random.nextInt(4) + 1
+                        val n = random.nextInt(d) + 1
+                        n / d.toDouble()
+                    } else {
+                        1.0
+                    }
+                    val startAngle = random.nextInt(8) * 0.125
+                    return Section(numSections, lengthRatio, widthRatio, arcRatio, startAngle, r0, r1)
                 }
             }
 
             private val shape: Shape
-            private val strokeWeight: Double = ceil((r1 - r0) * widthRatio * 0.5)
+            private val strokeWeight: Double = (r1 - r0) * widthRatio * 0.5 // odd behaviour. they do not touch, when widthRatio is 1
 
             init {
                 val radius: Double = (r0 + r1) * 0.5
                 val circle = Circle(0.0, 0.0, radius)
-                val arcLength: Double = lengthRatio / numSections.toDouble()
+                val nSec = arcRatio / numSections.toDouble()
+                val arcLength: Double = lengthRatio * nSec
                 val contours: List<ShapeContour> = List(numSections) { index ->
-                    val u0 = startAngle + index / numSections.toDouble() - arcLength * 0.5
+                    val u0 = startAngle + index * nSec
                     circle.contour.sub(u0, u0 + arcLength)
                 }
                 shape = Shape(contours)

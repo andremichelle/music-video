@@ -1,4 +1,5 @@
 import draw.ShaderToy
+import org.openrndr.Fullscreen
 import org.openrndr.application
 
 fun main() {
@@ -6,6 +7,7 @@ fun main() {
         configure {
             width = 1280
             height = 720
+            fullscreen = Fullscreen.SET_DISPLAY_MODE
         }
         program {
             val shaderToy = ShaderToy.fromFile("data/shader/uplifting.fs")

@@ -1,7 +1,6 @@
 import draw.Hud
 import draw.Hud.Circle.Companion.draw
 import org.openrndr.application
-import org.openrndr.color.ColorRGBa
 import org.openrndr.ffmpeg.ScreenRecorder
 import kotlin.random.Random
 
@@ -12,7 +11,7 @@ fun main() {
             height = 736
         }
         program {
-            val renderVideo = true
+            val renderVideo = false
             @Suppress("ConstantConditionIf")
             if (renderVideo) {
                 extend(ScreenRecorder()) {
@@ -20,6 +19,7 @@ fun main() {
                     quitAfterMaximum = true
                     maximumDuration = 16.0
                     frameRate = 60
+                    contentScale = 2.0
                 }
             }
 
@@ -32,10 +32,7 @@ fun main() {
             }
 
             extend {
-                drawer.stroke = ColorRGBa.fromHex(0x0EC5FF)
-                for (circle in circles) {
-                    drawer.draw(circle, seconds * 2.0)
-                }
+                drawer.draw(circles, seconds * 1.0)
             }
         }
     }
