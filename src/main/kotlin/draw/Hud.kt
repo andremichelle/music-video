@@ -25,14 +25,14 @@ class Hud {
 
     class Circle(random: Random, n: Int, r0: Double, r1: Double) : Element() {
         companion object {
-            fun Drawer.draw(circles: List<Circle>, time: Double) {
+            fun Drawer.draw(circles: List<Circle>, rgBa: ColorRGBa, time: Double) {
                 for (circle in circles) {
-                    this.draw(circle, time)
+                    this.draw(circle, rgBa, time)
                 }
             }
 
-            fun Drawer.draw(circle: Circle, time: Double) {
-                this.stroke = ColorRGBa.fromHex(0x0EC5FF)
+            fun Drawer.draw(circle: Circle, rgBa: ColorRGBa, time: Double) {
+                this.stroke = rgBa
                 this.fill = null
                 this.lineCap = LineCap.BUTT
                 this.lineJoin = LineJoin.MITER
@@ -104,7 +104,8 @@ class Hud {
             }
 
             private val shape: Shape
-            private val strokeWeight: Double = (r1 - r0) * widthRatio * 0.5 // odd behaviour. they do not touch, when widthRatio is 1
+            private val strokeWeight: Double =
+                (r1 - r0) * widthRatio * 0.5 // odd behaviour. they do not touch, when widthRatio is 1
 
             init {
                 val radius: Double = (r0 + r1) * 0.5

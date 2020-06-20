@@ -1,6 +1,7 @@
 import draw.Hud
 import draw.Hud.Circle.Companion.draw
 import org.openrndr.application
+import org.openrndr.color.ColorRGBa
 import org.openrndr.ffmpeg.ScreenRecorder
 import kotlin.random.Random
 
@@ -32,7 +33,7 @@ fun main() {
             }
 
             extend {
-                drawer.draw(circles, seconds * 1.0)
+                drawer.draw(circles, ColorRGBa.fromHex(0x0EC5FF), seconds * 1.0)
             }
         }
     }
