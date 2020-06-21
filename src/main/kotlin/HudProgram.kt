@@ -31,19 +31,16 @@ fun main() {
                 }
             }
 
-            val random = Random(0x303909)
+            val random = Random(0x303808909)
             val rgBa = ColorRGBa.fromHex(0x41F8FF)
 
-            val circles: List<List<Hud.Circle>> = List(2) {
-                val n = 6 + random.nextInt(4)
-                List(25) { index ->
-                    val c = index % 5
-                    val r = index / 5
-                    val x = 88.0 + c * (128 + 16)
-                    val y = 88.0 + r * (128 + 16)
-                    Hud.Circle(random, n, 16.0, 64.0)
-                        .move(x, y)
-                }
+            val circles: List<Hud.Circle> = List(25) { index ->
+                val c = index % 5
+                val r = index / 5
+                val x = 88.0 + c * (128 + 16)
+                val y = 88.0 + r * (128 + 16)
+                Hud.Circle(random, 8 + random.nextInt(5), 16.0, 64.0)
+                    .move(x, y)
             }
 
             val crosses: List<Cross> = List(25) { index ->
@@ -51,7 +48,7 @@ fun main() {
                 val r = index / 5
                 val x = 88.0 + c * (128 + 16)
                 val y = 88.0 + r * (128 + 16)
-                Cross(6.0).move(x, y)
+                Cross(4.0).move(x, y)
             }
 
             val rt = renderTarget(width, height) {
@@ -59,22 +56,17 @@ fun main() {
                 depthBuffer()
             }
 
-            val opacityStep = 1
             val blurred = colorBuffer(width, height)
             val bloom = GaussianBloom()
             bloom.window = 1
-            bloom.sigma = 1.0
+            bloom.sigma = 20.0
             bloom.gain = 1.0
             extend {
                 drawer.isolatedWithTarget(rt) {
                     drawer.clear(ColorRGBa.TRANSPARENT)
-                    for ((index, list) in circles.withIndex()) {
-                        val opacity = (index + opacityStep) / (circles.size + opacityStep).toDouble()
-                        drawer.draw(list, rgBa.opacify(opacity), seconds * 1.0)
-                    }
+                    drawer.draw(circles, rgBa, seconds * 1.0)
                     drawer.draw(crosses, rgBa.opacify(0.8))
                 }
-
                 bloom.apply(rt.colorBuffer(0), blurred)
                 drawer.image(blurred)
             }

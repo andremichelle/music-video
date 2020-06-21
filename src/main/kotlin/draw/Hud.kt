@@ -2,12 +2,11 @@ package draw
 
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
-import org.openrndr.draw.LineCap
-import org.openrndr.draw.LineJoin
+import org.openrndr.draw.ShadeStyle
 import org.openrndr.math.mod
-import org.openrndr.shape.Circle
 import org.openrndr.shape.Shape
 import org.openrndr.shape.ShapeContour
+import org.openrndr.shape.contour
 import kotlin.math.*
 import kotlin.random.Random
 
@@ -32,15 +31,13 @@ class Hud {
             }
 
             fun Drawer.draw(circle: Circle, rgBa: ColorRGBa, time: Double) {
-                this.stroke = rgBa
-                this.fill = null
-                this.lineCap = LineCap.BUTT
-                this.lineJoin = LineJoin.MITER
+                this.stroke = null
                 this.pushTransforms()
                 this.translate(circle.x, circle.y)
                 val subTime = time * 0.125
                 var index = (subTime).toInt() * 3
                 for (section in circle.sections) {
+                    this.fill = rgBa.opacify(section.opacity)
                     section.draw(
                         this, mappings[++index % mappings.size]
                             .invoke(if ((index and 1) == 1) subTime else 1.0 - subTime) * 360.0
@@ -74,7 +71,7 @@ class Hud {
 
         private val sections: List<Section> = List(n) { index ->
             val s = (r1 - r0) / n.toDouble()
-            Section.create(random, r0 + index * s, r0 + (index + 1) * s)
+            Section.create(random, index, r0 + index * s, r0 + (index + 1) * s)
         }
 
         class Section(
@@ -82,12 +79,13 @@ class Hud {
             lengthRatio: Double,
             widthRatio: Double,
             arcRatio: Double,
+            val opacity: Double,
             startAngle: Double = 0.0,
             r0: Double,
             r1: Double
         ) {
             companion object {
-                fun create(random: Random, r0: Double, r1: Double): Section {
+                fun create(random: Random, index: Int, r0: Double, r1: Double): Section {
                     val numSections = 1 shl (random.nextInt(5) + 1)
                     val lengthRatio =
                         if (random.nextBoolean()) {
@@ -96,7 +94,7 @@ class Hud {
                             0.75
                         }
                     val widthRatio = 2.0.pow(-random.nextInt(random.nextInt(2) + 1).toDouble())
-                    val arcRatio = if (random.nextInt(3) == 0) {
+                    val arcRatio = if (random.nextInt(4) == 0) {
                         // create some nice rational number
                         val d = random.nextInt(4) + 1
                         val n = random.nextInt(d) + 1
@@ -104,30 +102,57 @@ class Hud {
                     } else {
                         1.0
                     }
-                    val startAngle = random.nextInt(8) * 0.125
-                    return Section(numSections, lengthRatio, widthRatio, arcRatio, startAngle, r0, r1)
+                    val opacity = sqrt(((index % 4) + 1) / 4.0) * 0.8
+                    val startAngle = random.nextInt(8) * 0.25
+                    return Section(numSections, lengthRatio, widthRatio, arcRatio, opacity, startAngle, r0, r1)
+                }
+
+                private fun createArc(r0: Double, r1: Double, a0: Double, a1: Double): ShapeContour {
+                    return contour {
+                        val cs0 = cos(Math.toRadians(a0))
+                        val sn0 = sin(Math.toRadians(a0))
+                        val cs1 = cos(Math.toRadians(a1))
+                        val sn1 = sin(Math.toRadians(a1))
+                        val largeArcFlag = a1 - a0 > 180.0
+                        moveTo(cs0 * r0, sn0 * r0)
+                        arcTo(r0, r0, 0.0, largeArcFlag = largeArcFlag, sweepFlag = true, tx = cs1 * r0, ty = sn1 * r0)
+                        lineTo(cs1 * r1, sn1 * r1)
+                        arcTo(r1, r1, 0.0, largeArcFlag = largeArcFlag, sweepFlag = false, tx = cs0 * r1, ty = sn0 * r1)
+                        close()
+                    }
                 }
             }
 
             private val shape: Shape
-            private val strokeWeight: Double =
-                (r1 - r0) * widthRatio * 0.5 // odd behaviour. they do not touch, when widthRatio is 1
+            private val conicGradient: ShadeStyle?
 
             init {
                 val radius: Double = (r0 + r1) * 0.5
-                val circle = Circle(0.0, 0.0, radius)
+                val width: Double = max(0.5, (r1 - r0) * 0.5 * widthRatio - 0.5)
                 val nSec = arcRatio / numSections.toDouble()
                 val arcLength: Double = lengthRatio * nSec
                 val contours: List<ShapeContour> = List(numSections) { index ->
                     val u0 = startAngle + index * nSec
-                    circle.contour.sub(u0, u0 + arcLength)
+                    createArc(
+                        radius - width,
+                        radius + width,
+                        u0 * 360.0,
+                        (u0 + arcLength) * 360.0
+                    )
+                }
+                conicGradient = if (arcLength >= 0.25) conic(
+                    startAngle * 360.0,
+                    (startAngle + nSec) * 360.0,
+                    lengthRatio
+                ) else {
+                    null
                 }
                 shape = Shape(contours)
             }
 
             fun draw(drawer: Drawer, rotation: Double) {
+                drawer.shadeStyle = conicGradient
                 drawer.pushTransforms()
-                drawer.strokeWeight = strokeWeight
                 drawer.rotate(rotation)
                 drawer.shape(shape)
                 drawer.popTransforms()
