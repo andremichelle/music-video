@@ -5,10 +5,9 @@ import org.openrndr.ffmpeg.ScreenRecorder
 fun main() {
     application {
         configure {
-            width = 720
+            width = 1280
             height = 720
             title = "Shadertoy"
-            //fullscreen = Fullscreen.SET_DISPLAY_MODE
         }
         program {
             val renderVideo = false
@@ -23,11 +22,9 @@ fun main() {
                 }
             }
 
-            val shaderToy = ShaderToy.fromFile("data/shader/uplifting.fs")
-
+            val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
             extend {
-                val time = (frameCount % 600) / 600.0
-                shaderToy.render(window.size, time)
+                shaderToy.render(window.size * window.scale, seconds * 0.25)
             }
         }
     }
