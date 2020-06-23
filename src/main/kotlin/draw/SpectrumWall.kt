@@ -38,9 +38,9 @@ class SpectrumWall(
                 val threshold = 1f - r / (numRows - 1).toFloat()
                 if (peak && threshold < history[c]) {
                     peak = false
-                    drawer.fill = ColorRGBa.BLACK
-                } else if (threshold <= energyNorm) {
                     drawer.fill = ColorRGBa.WHITE
+                } else if (threshold <= energyNorm) {
+                    drawer.fill = ColorRGBa.WHITE.opacify(0.60)
                 } else {
                     drawer.fill = ColorRGBa.WHITE.opacify(0.08)
                 }

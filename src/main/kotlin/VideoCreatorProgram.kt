@@ -1,5 +1,7 @@
 import audio.AudioTransform
 import audio.WavFormat
+import draw.Fps
+import draw.Fps.Companion.draw
 import draw.Hud
 import draw.Hud.Circle.Companion.draw
 import draw.ShaderToy
@@ -17,6 +19,7 @@ import kotlin.random.Random
 // Try
 // https://www.shadertoy.com/view/ls3Xzf (glitch)
 
+@Suppress("ConstantConditionIf")
 fun main() {
     application {
         configure {
@@ -36,10 +39,17 @@ fun main() {
                     contentScale = 2.0
                 }
             }
-            val wavFormat = WavFormat.decode(File("data/music/78qeujew8w.wav").readBytes())
+            val DRAW_SHADERTOY = true
+            val DRAW_HUD_CIRCLE = true
+            val DRAW_SPECTRA = true
+
+
+            val musicPath = "data/music/78qeujew8w.wav"
+            val musicFile = File(musicPath)
+            val wavFormat = WavFormat.decode(musicFile.readBytes())
             val transform = AudioTransform(wavFormat)
-            val spectrumWall0 = SpectrumWall(48, 32, 8, 4, 1).reflect()
-            val spectrumWall1 = SpectrumWall(48, 32, 8, 4, 1)
+            val spectrumWall0 = SpectrumWall(20, 10, 16, 8, 2).reflect()
+            val spectrumWall1 = SpectrumWall(20, 10, 16, 8, 2)
 
             val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
             val random = Random(0x303808909)
@@ -55,23 +65,31 @@ fun main() {
             bloom.window = 5
             bloom.sigma = 0.1
             bloom.gain = 2.0
+
+            val fps = Fps()
             extend {
                 transform.advance(seconds)
-                shaderToy.render(window.size * window.scale, seconds * 0.25)
-                drawer.isolatedWithTarget(rt) {
-                    drawer.clear(ColorRGBa.TRANSPARENT)
-                    drawer.draw(listOf(circle), rgBa, seconds)
+                if (DRAW_SHADERTOY) {
+                    shaderToy.render(window.size * window.scale, seconds * 0.25)
                 }
-                bloom.apply(rt.colorBuffer(0), blurred)
-                drawer.image(blurred)
 
-                drawer.stroke = null
-                spectrumWall0.draw(drawer, transform, 0)
-
-                drawer.pushTransforms()
-                drawer.translate(width - spectrumWall1.width().toDouble(), 0.0)
-                spectrumWall1.draw(drawer, transform, 1)
-                drawer.popTransforms()
+                if (DRAW_HUD_CIRCLE) {
+                    drawer.isolatedWithTarget(rt) {
+                        drawer.clear(ColorRGBa.TRANSPARENT)
+                        drawer.draw(listOf(circle), rgBa, seconds)
+                    }
+                    bloom.apply(rt.colorBuffer(0), blurred)
+                    drawer.image(blurred)
+                }
+                if (DRAW_SPECTRA) {
+                    drawer.stroke = null
+                    spectrumWall0.draw(drawer, transform, 0)
+                    drawer.pushTransforms()
+                    drawer.translate(width - spectrumWall1.width().toDouble(), 0.0)
+                    spectrumWall1.draw(drawer, transform, 1)
+                    drawer.popTransforms()
+                }
+                drawer.draw(fps, seconds)
             }
         }
     }
