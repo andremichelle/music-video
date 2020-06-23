@@ -17,11 +17,22 @@ class AudioPlayback(samplePath: String) {
     init {
         samplePlayer = SamplePlayer(context, SampleManager.sample(samplePath))
         context.out.addInput(samplePlayer)
-        context.start()
+    }
+
+    fun play() {
+        if (!context.isRunning) {
+            context.start()
+        }
         samplePlayer.start()
     }
 
     fun seconds(): Double {
         return samplePlayer.position / 1000.0
+    }
+
+    fun stop() {
+        println("Stop")
+        context.stop()
+        samplePlayer.kill()
     }
 }

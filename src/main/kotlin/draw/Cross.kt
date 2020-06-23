@@ -27,15 +27,14 @@ class Cross(radius: Double) : Hud.Element() {
             this.lineJoin = LineJoin.MITER
             this.fill = null
             for (cross in crosses) {
-                this.pushTransforms()
-                this.translate(cross.x, cross.y)
+                cross.begin(this)
                 this.contours(cross.contours)
-                this.popTransforms()
+                cross.end(this)
             }
         }
     }
 
-    override fun move(x: Double, y: Double): Cross {
+    override fun move(x: Int, y: Int): Cross {
         return super.move(x, y) as Cross
     }
 }

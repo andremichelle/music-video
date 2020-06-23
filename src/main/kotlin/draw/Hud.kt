@@ -14,13 +14,22 @@ import kotlin.random.Random
 
 class Hud {
     open class Element {
-        var x = 0.0
-        var y = 0.0
+        var x = 0
+        var y = 0
 
-        open fun move(x: Double, y: Double): Element {
+        open fun move(x: Int, y: Int): Element {
             this.x = x
             this.y = y
             return this
+        }
+
+        fun begin(drawer: Drawer) {
+            drawer.pushTransforms()
+            drawer.translate(x.toDouble(), y.toDouble())
+        }
+
+        fun end(drawer: Drawer) {
+            drawer.popTransforms()
         }
     }
 
@@ -33,9 +42,8 @@ class Hud {
             }
 
             fun Drawer.draw(circle: Circle, rgBa: ColorRGBa, time: Double) {
+                circle.begin(this)
                 this.stroke = null
-                this.pushTransforms()
-                this.translate(circle.x, circle.y)
                 val subTime = time * 0.125
                 var index = (subTime).toInt() * 3
                 for (section in circle.sections) {
@@ -45,7 +53,7 @@ class Hud {
                             .invoke(if ((index and 1) == 1) subTime else 1.0 - subTime) * 360.0
                     )
                 }
-                this.popTransforms()
+                circle.end(this)
             }
 
             private val mappings: List<(Double) -> Double> = listOf(
@@ -67,7 +75,7 @@ class Hud {
             }
         }
 
-        override fun move(x: Double, y: Double): Circle {
+        override fun move(x: Int, y: Int): Circle {
             return super.move(x, y) as Circle
         }
 

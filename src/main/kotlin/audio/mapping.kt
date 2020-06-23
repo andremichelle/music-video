@@ -6,6 +6,10 @@ fun secondsToNumFrames(seconds: Double, samplingRate: Int): Double {
     return seconds * samplingRate
 }
 
+fun secondsToBars(seconds: Double, bpm: Double): Double {
+    return bpm * seconds / 240.0
+}
+
 private val DB_LV = ln(10.0) / 20.0
 
 fun gainToDb(gain: Float): Double {

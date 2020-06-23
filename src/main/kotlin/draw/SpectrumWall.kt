@@ -11,7 +11,7 @@ class SpectrumWall(
     private val blockWidth: Int,
     private val blockHeight: Int,
     private val blockPadding: Int
-) {
+) : Hud.Element() {
     private val values: FloatArray = FloatArray(numCols)
     private val history: FloatArray = FloatArray(numCols)
     private var reflect = false
@@ -22,10 +22,13 @@ class SpectrumWall(
     }
 
     fun draw(drawer: Drawer, transform: AudioTransform, channelIndex: Int) {
+        begin(drawer)
         transform.mapSpectrum(values, channelIndex)
         if (reflect) {
             values.reverse()
         }
+        val cPeak = ColorRGBa.fromHex(0x41F8FF)
+        val cValue = cPeak.opacify(0.40)
         val smoothingCoeff = exp(-1.0 / (transform.fps * 0.3)).toFloat() // 300ms release-time
         for (c in channelIndex until numCols) {
             val energyNorm = values[c]
@@ -40,11 +43,11 @@ class SpectrumWall(
                 val threshold = 1f - r / (numRows - 1).toFloat()
                 if (peak && threshold < history[c]) {
                     peak = false
-                    drawer.fill = ColorRGBa.WHITE
+                    drawer.fill = cPeak
                 } else if (threshold <= energyNorm) {
-                    drawer.fill = ColorRGBa.WHITE.opacify(0.60)
+                    drawer.fill = cValue
                 } else {
-                    drawer.fill = ColorRGBa.WHITE.opacify(0.08)
+                    continue
                 }
                 val y = r * (blockHeight + blockPadding)
                 drawer.rectangle(
@@ -55,6 +58,7 @@ class SpectrumWall(
                 )
             }
         }
+        end(drawer)
     }
 
     @Suppress("unused")
@@ -65,5 +69,9 @@ class SpectrumWall(
     @Suppress("unused")
     fun height(): Int {
         return numRows * blockHeight + (numRows - 1) * blockPadding
+    }
+
+    override fun move(x: Int, y: Int): SpectrumWall {
+        return super.move(x, y) as SpectrumWall
     }
 }

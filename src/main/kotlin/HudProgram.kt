@@ -41,8 +41,8 @@ fun main() {
             val circles: List<Hud.Circle> = List(25) { index ->
                 val c = index % 5
                 val r = index / 5
-                val x = 88.0 + c * (128 + 16)
-                val y = 88.0 + r * (128 + 16)
+                val x = 88 + c * (128 + 16)
+                val y = 88 + r * (128 + 16)
                 Hud.Circle(random, 8 + random.nextInt(5), 16.0, 64.0)
                     .move(x, y)
             }
@@ -50,8 +50,8 @@ fun main() {
             val crosses: List<Cross> = List(25) { index ->
                 val c = index % 5
                 val r = index / 5
-                val x = 88.0 + c * (128 + 16)
-                val y = 88.0 + r * (128 + 16)
+                val x = 88 + c * (128 + 16)
+                val y = 88 + r * (128 + 16)
                 Cross(4.0).move(x, y)
             }
 
