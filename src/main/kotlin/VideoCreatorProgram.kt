@@ -1,3 +1,4 @@
+import audio.AudioPlayback
 import audio.AudioTransform
 import audio.WavFormat
 import draw.Fps
@@ -43,9 +44,9 @@ fun main() {
             val DRAW_HUD_CIRCLE = true
             val DRAW_SPECTRA = true
 
-
             val musicPath = "data/music/78qeujew8w.wav"
             val musicFile = File(musicPath)
+            val audioPlayback = AudioPlayback(musicPath)
             val wavFormat = WavFormat.decode(musicFile.readBytes())
             val transform = AudioTransform(wavFormat)
             val spectrumWall0 = SpectrumWall(20, 10, 16, 8, 2).reflect()
@@ -68,15 +69,15 @@ fun main() {
 
             val fps = Fps()
             extend {
-                transform.advance(seconds)
+                val playBackSeconds = audioPlayback.seconds()
+                transform.advance(playBackSeconds)
                 if (DRAW_SHADERTOY) {
-                    shaderToy.render(window.size * window.scale, seconds * 0.25)
+                    shaderToy.render(window.size * window.scale, playBackSeconds * 0.25)
                 }
-
                 if (DRAW_HUD_CIRCLE) {
                     drawer.isolatedWithTarget(rt) {
                         drawer.clear(ColorRGBa.TRANSPARENT)
-                        drawer.draw(listOf(circle), rgBa, seconds)
+                        drawer.draw(listOf(circle), rgBa, playBackSeconds)
                     }
                     bloom.apply(rt.colorBuffer(0), blurred)
                     drawer.image(blurred)

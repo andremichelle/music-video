@@ -63,7 +63,7 @@ val orxVersion = if (orxUseSnapshot) "0.4.0-SNAPSHOT" else "0.3.51"
 val supportedPlatforms = setOf("windows", "macos", "linux-x64", "linux-arm64")
 
 val openrndrOs = if (project.hasProperty("targetPlatform")) {
-    val platform : String = project.property("targetPlatform") as String
+    val platform: String = project.property("targetPlatform") as String
     if (platform !in supportedPlatforms) {
         throw IllegalArgumentException("target platform not supported: $platform")
     } else {
@@ -72,10 +72,10 @@ val openrndrOs = if (project.hasProperty("targetPlatform")) {
 } else when (OperatingSystem.current()) {
     OperatingSystem.WINDOWS -> "windows"
     OperatingSystem.MAC_OS -> "macos"
-    OperatingSystem.LINUX -> when(val h = DefaultNativePlatform("current").architecture.name) {
+    OperatingSystem.LINUX -> when (val h = DefaultNativePlatform("current").architecture.name) {
         "x86-64" -> "linux-x64"
         "aarch64" -> "linux-arm64"
-        else ->throw IllegalArgumentException("architecture not supported: $h")
+        else -> throw IllegalArgumentException("architecture not supported: $h")
     }
     else -> throw IllegalArgumentException("os not supported")
 }
@@ -94,7 +94,7 @@ val kotlinVersion = "1.3.72"
 
 plugins {
     java
-    kotlin("jvm") version("1.3.72")
+    kotlin("jvm") version ("1.3.72")
     id("com.github.johnrengelman.shadow") version ("5.2.0")
     id("org.beryx.runtime") version ("1.8.1")
 }
@@ -105,10 +105,11 @@ repositories {
         mavenLocal()
     }
     maven(url = "https://dl.bintray.com/openrndr/openrndr")
+    maven(url = "https://jitpack.io")
 }
 
 fun DependencyHandler.orx(module: String): Any {
-        return "org.openrndr.extra:$module:$orxVersion"
+    return "org.openrndr.extra:$module:$orxVersion"
 }
 
 fun DependencyHandler.openrndr(module: String): Any {
@@ -132,22 +133,22 @@ dependencies {
     runtimeOnly(openrndr("gl3"))
     runtimeOnly(openrndrNatives("gl3"))
     implementation(openrndr("openal"))
-    runtimeOnly(openrndrNatives("openal"))
+    implementation(openrndrNatives("openal"))
     implementation(openrndr("core"))
     implementation(openrndr("svg"))
     implementation(openrndr("animatable"))
     implementation(openrndr("extensions"))
     implementation(openrndr("filter"))
 
-    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core","1.3.6")
-    implementation("io.github.microutils", "kotlin-logging","1.7.9")
+    implementation("org.jetbrains.kotlinx", "kotlinx-coroutines-core", "1.3.6")
+    implementation("io.github.microutils", "kotlin-logging", "1.7.9")
 
-    when(applicationLogging) {
+    when (applicationLogging) {
         Logging.NONE -> {
-            runtimeOnly("org.slf4j","slf4j-nop","1.7.30")
+            runtimeOnly("org.slf4j", "slf4j-nop", "1.7.30")
         }
         Logging.SIMPLE -> {
-            runtimeOnly("org.slf4j","slf4j-simple","1.7.30")
+            runtimeOnly("org.slf4j", "slf4j-simple", "1.7.30")
         }
         Logging.FULL -> {
             runtimeOnly("org.apache.logging.log4j", "log4j-slf4j-impl", "2.13.1")
@@ -175,6 +176,7 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
     testImplementation("junit", "junit", "4.12")
+    implementation("com.github.orsjb","beads","migrate_to_gradle-SNAPSHOT")
 }
 
 // --------------------------------------------------------------------------------------------------------------------
