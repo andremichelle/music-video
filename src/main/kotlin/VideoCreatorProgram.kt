@@ -21,12 +21,15 @@ import kotlin.random.Random
 // Try
 // https://www.shadertoy.com/view/ls3Xzf (glitch)
 
-// Figure
+// Todo
 // How to draw a spectrum with one shader call (send height as uniform?)
+// Add audiotool logo
+// Add cover
+// Add HUD frame
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val videoCaptureMode = true
+    val videoCaptureMode = false
 
     application {
         configure {
