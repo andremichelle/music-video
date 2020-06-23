@@ -33,7 +33,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     vec4 sphere = vec4(0., 0., 0., 1.0);
     float t = fract(iTime);
     vec3 ro = vec3(0., 0., 1.);
-    vec3 rd = camera(ro, vec3(0.), uv, 1.1);
+    vec3 rd = camera(ro, vec3(0.), uv, 1.2);
 	float sp = iSphere(ro, rd, sphere);
     if(-1.==sp) {
         return;
@@ -45,5 +45,5 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     suv.x += t*0.03125;
     float a = smoothstep(1., pos.z*.75, length(fract(suv*192.0)*2.-1.));
 	float l = abs(.5-2.*suv.y);
-    fragColor = vec4(vec3(a*.1, a*.3, a*.5), 1.0);
+    fragColor = vec4(vec3(0.25*a, 0.97*a, 1.0*a), 1.0);
 }
