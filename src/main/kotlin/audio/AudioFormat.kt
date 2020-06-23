@@ -7,6 +7,8 @@ import kotlin.math.min
 interface AudioFormat {
     fun seconds(): Double
 
+    fun numChannels(): Int
+
     fun sampleRate(): Int
 
     fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Int)
@@ -24,7 +26,7 @@ open class WavFormat private constructor(
     private val dataOffset: Int
 ) : AudioFormat {
     override fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Int) {
-        assert(channelIndex in 0 until numChannels) { "channelIndex $channelIndex out of bounds." }
+        val clampChannelIndex = min(channelIndex, numChannels - 1)
         val n = min(target.size, numFrames - position)
         var i = 0
         if (n > 0) {
@@ -33,7 +35,7 @@ open class WavFormat private constructor(
                 val shortBuffer = buffer.slice().order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
                 val scale = 1.0 / Short.MAX_VALUE.toDouble()
                 while (i < n) {
-                    val shortIndex = i * numChannels + channelIndex
+                    val shortIndex = i * numChannels + clampChannelIndex
                     val shortValue = shortBuffer[shortIndex]
                     target[i] = (shortValue * scale).toFloat()
                     ++i
@@ -41,7 +43,7 @@ open class WavFormat private constructor(
             } else if (32 == bitsPerChannel.toInt()) {
                 val floatBuffer = buffer.slice().order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
                 while (i < n) {
-                    target[i] = floatBuffer[i * numChannels + channelIndex]
+                    target[i] = floatBuffer[i * numChannels + clampChannelIndex]
                     ++i
                 }
             }
@@ -54,6 +56,10 @@ open class WavFormat private constructor(
 
     override fun seconds(): Double {
         return numFrames / sampleRate.toDouble()
+    }
+
+    override fun numChannels(): Int {
+        return numChannels.toInt()
     }
 
     override fun sampleRate(): Int {
@@ -121,9 +127,9 @@ open class WavFormat private constructor(
             throw IllegalArgumentException("Unknown wav-format")
         }
 
-        const val MAGIC_RIFF = 0x46464952
-        const val MAGIC_WAVE = 0x45564157
-        const val MAGIC_FMT = 0x20746d66
-        const val MAGIC_DATA = 0x61746164
+        private const val MAGIC_RIFF = 0x46464952
+        private const val MAGIC_WAVE = 0x45564157
+        private const val MAGIC_FMT = 0x20746d66
+        private const val MAGIC_DATA = 0x61746164
     }
 }

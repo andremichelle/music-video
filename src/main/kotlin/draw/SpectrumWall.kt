@@ -1,6 +1,6 @@
 package draw
 
-import audio.AudioVisualMapping
+import audio.AudioTransform
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
 
@@ -13,10 +13,19 @@ class SpectrumWall(
 ) {
     private val values: FloatArray = FloatArray(numCols)
     private val history: FloatArray = FloatArray(numCols)
+    private var reflect = false
 
-    fun draw(drawer: Drawer, mapping: AudioVisualMapping) {
-        mapping.write(values)
-        for (c in 0 until numCols) {
+    fun reflect(value: Boolean = true): SpectrumWall {
+        reflect = value
+        return this
+    }
+
+    fun draw(drawer: Drawer, transform: AudioTransform, channelIndex: Int) {
+        transform.mapSpectrum(values, channelIndex)
+        if (reflect) {
+            values.reverse()
+        }
+        for (c in channelIndex until numCols) {
             val energyNorm = values[c]
             if (history[c] < energyNorm) {
                 history[c] = energyNorm
@@ -25,7 +34,7 @@ class SpectrumWall(
             }
             var peak = true
             val x = c * (blockWidth + blockPadding)
-            for (r in 0 until numRows) {
+            for (r in channelIndex until numRows) {
                 val threshold = 1f - r / (numRows - 1).toFloat()
                 if (peak && threshold < history[c]) {
                     peak = false
@@ -33,7 +42,7 @@ class SpectrumWall(
                 } else if (threshold <= energyNorm) {
                     drawer.fill = ColorRGBa.WHITE
                 } else {
-                    drawer.fill = ColorRGBa.WHITE.opacify(0.02)
+                    drawer.fill = ColorRGBa.WHITE.opacify(0.08)
                 }
                 val y = r * (blockHeight + blockPadding)
                 drawer.rectangle(
@@ -44,5 +53,15 @@ class SpectrumWall(
                 )
             }
         }
+    }
+
+    @Suppress("unused")
+    fun width(): Int {
+        return numCols * blockWidth + (numCols - 1) * blockPadding
+    }
+
+    @Suppress("unused")
+    fun height(): Int {
+        return numRows * blockHeight + (numRows - 1) * blockPadding
     }
 }
