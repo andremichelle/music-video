@@ -9,7 +9,7 @@ class AudioTransform(
     private val maxHz: Double = 16000.0,
     private val minDb: Double = -60.0,
     private val maxDb: Double = -9.0,
-    fps: Double = 60.0
+    val fps: Double = 60.0
 ) {
     private val bandWidth = format.sampleRate() / fftSize.toDouble()
     private val spectra: List<FloatArray> = List(2) { FloatArray(fftSize shr 1) }
@@ -19,7 +19,7 @@ class AudioTransform(
     private val imag: FloatArray = FloatArray(fftSize)
     private val window: FloatArray = FloatArray(fftSize)
     private val peaks = FloatArray(2)
-    private val releaseCoeff = exp(-1.0 / (fps * 0.1)).toFloat() // 100ms release-time
+    private val smoothingCoeff = exp(-1.0 / (fps * 0.1)).toFloat() // 100ms release-time
 
     private var position: Int = 0
 
@@ -57,7 +57,7 @@ class AudioTransform(
                 if (peaks[channelIndex] < peak) {
                     peaks[channelIndex] = peak
                 } else {
-                    peaks[channelIndex] = peak + releaseCoeff * (peaks[channelIndex] - peak)
+                    peaks[channelIndex] = peak + smoothingCoeff * (peaks[channelIndex] - peak)
                 }
                 real[i] = window[i] * value
             }
@@ -71,7 +71,7 @@ class AudioTransform(
                 if (spectrum[i] <= energy) {
                     spectrum[i] = energy
                 } else {
-                    spectrum[i] = energy + releaseCoeff * (spectrum[i] - energy)
+                    spectrum[i] = energy + smoothingCoeff * (spectrum[i] - energy)
                 }
             }
             imag.fill(0f)

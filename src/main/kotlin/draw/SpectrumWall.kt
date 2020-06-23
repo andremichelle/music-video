@@ -3,6 +3,7 @@ package draw
 import audio.AudioTransform
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
+import kotlin.math.exp
 
 class SpectrumWall(
     private val numCols: Int,
@@ -25,12 +26,13 @@ class SpectrumWall(
         if (reflect) {
             values.reverse()
         }
+        val smoothingCoeff = exp(-1.0 / (transform.fps * 0.3)).toFloat() // 300ms release-time
         for (c in channelIndex until numCols) {
             val energyNorm = values[c]
             if (history[c] < energyNorm) {
                 history[c] = energyNorm
             } else if (history[c] >= 0f) {
-                history[c] -= 0.01f
+                history[c] = energyNorm + smoothingCoeff * (history[c] - energyNorm)
             }
             var peak = true
             val x = c * (blockWidth + blockPadding)

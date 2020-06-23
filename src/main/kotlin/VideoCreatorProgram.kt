@@ -49,8 +49,8 @@ fun main() {
             val audioPlayback = AudioPlayback(musicPath)
             val wavFormat = WavFormat.decode(musicFile.readBytes())
             val transform = AudioTransform(wavFormat)
-            val spectrumWall0 = SpectrumWall(20, 10, 16, 8, 2).reflect()
-            val spectrumWall1 = SpectrumWall(20, 10, 16, 8, 2)
+            val spectrumWall0 = SpectrumWall(20, 16, 16, 4, 1).reflect()
+            val spectrumWall1 = SpectrumWall(20, 16, 16, 4, 1)
 
             val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
             val random = Random(0x303808909)
