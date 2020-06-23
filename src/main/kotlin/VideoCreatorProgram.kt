@@ -20,6 +20,10 @@ import kotlin.random.Random
 // Try
 // https://www.shadertoy.com/view/ls3Xzf (glitch)
 
+// Figure
+// How to draw a spectrum with one shader call (send height as uniform?)
+// Mux audio into mp4 with ffmpeg after rendering video
+
 @Suppress("ConstantConditionIf")
 fun main() {
     application {
@@ -49,7 +53,7 @@ fun main() {
             val audioPlayback = AudioPlayback(musicPath)
             val wavFormat = WavFormat.decode(musicFile.readBytes())
             val transform = AudioTransform(wavFormat)
-            val spectrumWall0 = SpectrumWall(20, 16, 16, 4, 1).reflect()
+            val spectrumWall0 = SpectrumWall(32, 24, 12, 4, 1).reflect()
             val spectrumWall1 = SpectrumWall(20, 16, 16, 4, 1)
 
             val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
@@ -85,10 +89,10 @@ fun main() {
                 if (DRAW_SPECTRA) {
                     drawer.stroke = null
                     spectrumWall0.draw(drawer, transform, 0)
-                    drawer.pushTransforms()
-                    drawer.translate(width - spectrumWall1.width().toDouble(), 0.0)
-                    spectrumWall1.draw(drawer, transform, 1)
-                    drawer.popTransforms()
+//                    drawer.pushTransforms()
+//                    drawer.translate(width - spectrumWall1.width().toDouble(), 0.0)
+//                    spectrumWall1.draw(drawer, transform, 1)
+//                    drawer.popTransforms()
                 }
                 drawer.draw(fps, seconds)
             }
