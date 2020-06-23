@@ -24,7 +24,9 @@ fun main() {
 
             val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
             extend {
-                shaderToy.render(window.size * window.scale, seconds * 0.25)
+                shaderToy.render(window.size * window.scale, seconds * 0.25, uniforms = { shader ->
+                    shader.uniform("iZoom", 1.2)
+                })
             }
         }
     }

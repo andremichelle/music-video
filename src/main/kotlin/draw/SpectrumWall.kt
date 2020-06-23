@@ -4,6 +4,7 @@ import audio.AudioTransform
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
 import kotlin.math.exp
+import kotlin.math.max
 
 class SpectrumWall(
     private val numCols: Int,
@@ -21,14 +22,18 @@ class SpectrumWall(
         return this
     }
 
-    fun draw(drawer: Drawer, transform: AudioTransform, channelIndex: Int) {
+    fun draw(
+        drawer: Drawer,
+        rgBa: ColorRGBa,
+        transform: AudioTransform,
+        channelIndex: Int
+    ) {
         begin(drawer)
         transform.mapSpectrum(values, channelIndex)
         if (reflect) {
             values.reverse()
         }
-        val cPeak = ColorRGBa.fromHex(0x41F8FF)
-        val cValue = cPeak.opacify(0.40)
+        val cValue = rgBa.opacify(0.40)
         val smoothingCoeff = exp(-1.0 / (transform.fps * 0.3)).toFloat() // 300ms release-time
         for (c in channelIndex until numCols) {
             val energyNorm = values[c]
@@ -43,7 +48,7 @@ class SpectrumWall(
                 val threshold = 1f - r / (numRows - 1).toFloat()
                 if (peak && threshold < history[c]) {
                     peak = false
-                    drawer.fill = cPeak
+                    drawer.fill = rgBa
                 } else if (threshold <= energyNorm) {
                     drawer.fill = cValue
                 } else {
@@ -73,5 +78,9 @@ class SpectrumWall(
 
     override fun move(x: Int, y: Int): SpectrumWall {
         return super.move(x, y) as SpectrumWall
+    }
+
+    init {
+        history.fill(0.0f)
     }
 }

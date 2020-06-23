@@ -1,3 +1,5 @@
+uniform float iPeak;
+
 #define PI 3.14159
 #define eps 0.001
 vec4 check(vec2 uv) {
@@ -43,7 +45,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 	float phi = acos( -pos.y)/(PI*2.);
     vec2 suv = vec2(.5+theta*.5, phi);
     suv.x += t*0.03125;
-    float a = smoothstep(1., pos.z*.75, length(fract(suv*192.0)*2.-1.));
+    float a = smoothstep(1., pos.z*.75, length(fract(suv*192.0)*2.-1.)) * iPeak;
 	float l = abs(.5-2.*suv.y);
     fragColor = vec4(vec3(0.25*a, 0.97*a, 1.0*a), 1.0);
 }

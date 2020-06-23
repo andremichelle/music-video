@@ -2,12 +2,9 @@ import audio.AudioPlayback
 import audio.AudioTransform
 import audio.WavFormat
 import audio.secondsToBars
-import draw.Fps
+import draw.*
 import draw.Fps.Companion.draw
-import draw.Hud
 import draw.Hud.Circle.Companion.draw
-import draw.ShaderToy
-import draw.SpectrumWall
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.colorBuffer
@@ -15,6 +12,8 @@ import org.openrndr.draw.isolatedWithTarget
 import org.openrndr.draw.renderTarget
 import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.ffmpeg.ScreenRecorder
+import org.openrndr.math.clamp
+import org.openrndr.shape.Rectangle
 import java.io.File
 import java.nio.file.Paths
 import kotlin.random.Random
@@ -27,6 +26,8 @@ import kotlin.random.Random
 
 @Suppress("ConstantConditionIf")
 fun main() {
+    val videoCaptureMode = true
+
     application {
         configure {
             width = 1920 / 2
@@ -34,17 +35,13 @@ fun main() {
             title = "Video Preview"
         }
         program {
-            val DRAW_SHADERTOY = true
-            val DRAW_HUD_CIRCLE = true
-            val DRAW_SPECTRA = true
-            val VIDEO_CAPTURE = false
-
             val wavPath = "data/music/78qeujew8w.wav"
             val wavFile = File(wavPath)
             val wavFormat = WavFormat.decode(wavFile.readBytes())
             val bpm = 126.0
 
-            if (VIDEO_CAPTURE) {
+            if (videoCaptureMode) {
+                // call this in terminal to mux audio into video
                 println(
                     "ffmpeg -i ${Paths.get("tmp/movie.mp4").toAbsolutePath()} -i ${wavFile.toPath()
                         .toAbsolutePath()} -c copy tmp/movie.mkv"
@@ -59,15 +56,22 @@ fun main() {
             }
 
             val audioPlayback = AudioPlayback(wavPath)
-            if (!VIDEO_CAPTURE) {
+            if (!videoCaptureMode) {
                 audioPlayback.play()
             }
             val transform = AudioTransform(wavFormat)
-            val spectrumWall0 = SpectrumWall(20, 16, 12, 4, 1).reflect()
-            val spectrumWall1 = SpectrumWall(20, 16, 16, 4, 1)
-            spectrumWall0.move(0, height / 2)
-            spectrumWall1.move(width - spectrumWall1.width(), height / 2)
-
+            val sw0 = SpectrumWall(32, 16, 10, 4, 1)
+            val sw1 = SpectrumWall(32, 16, 10, 4, 1)
+            sw0.reflect()
+            sw0.move(32, (height - sw0.height()) / 2)
+            sw1.move((width - 32) - sw1.width(), (height - sw0.height()) / 2)
+            val waveform0: Waveform = Waveform(sw0.width().toDouble(), sw0.height().toDouble()).move(
+                32,
+                (height - sw0.height()) / 2 + sw0.height() + 32
+            )
+            val waveform1: Waveform = Waveform(sw1.width().toDouble(), sw1.height().toDouble()).move(
+                (width - 32) - sw1.width(), (height - sw0.height()) / 2 + sw1.height() + 32
+            )
             val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
             val random = Random(0x303808909)
             val rgBa = ColorRGBa.fromHex(0x41F8FF)
@@ -85,31 +89,48 @@ fun main() {
             bloom.sigma = 0.1
             bloom.gain = 2.0
 
+            val minDb: Double = -72.0
+            val maxDb: Double = -0.0
+            val normDb: (Double) -> Double = { db -> (db - minDb) / (maxDb - minDb) }
+
             val fps = Fps()
             extend {
-                val playBackSeconds = if (VIDEO_CAPTURE) seconds else audioPlayback.seconds()
+                val playBackSeconds = if (videoCaptureMode) seconds else audioPlayback.seconds()
                 val bars = secondsToBars(playBackSeconds, bpm)
                 transform.advance(playBackSeconds)
-
-                if (DRAW_SHADERTOY) {
-                    shaderToy.render(window.size * window.scale, playBackSeconds * 0.25)
+                shaderToy.render(window.size * window.scale, playBackSeconds * 2.0) { shader ->
+                    shader.uniform("iPeak", 0.5 + normDb(transform.peakDb()) * 0.5)
                 }
                 drawer.isolatedWithTarget(rt) {
-                    if (DRAW_HUD_CIRCLE) {
-                        drawer.clear(ColorRGBa.TRANSPARENT)
-                        drawer.draw(listOf(circleA, circleB), rgBa, bars * 2.0)
-                    }
-                    if (DRAW_SPECTRA) {
-                        drawer.stroke = null
-                        spectrumWall0.draw(drawer, transform, 0)
-                        spectrumWall1.draw(drawer, transform, 1)
-                    }
+                    drawer.clear(ColorRGBa.TRANSPARENT)
+                    drawer.draw(listOf(circleA, circleB), rgBa, bars * 2.0)
+                    drawer.stroke = null
+                    sw0.draw(drawer, rgBa, transform, 0)
+                    sw1.draw(drawer, rgBa, transform, 1)
+                    drawer.fill = rgBa
+                    waveform0.render(drawer, transform.channel(0))
+                    waveform1.render(drawer, transform.channel(1))
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
                 drawer.image(blurred)
-                if (!VIDEO_CAPTURE) {
+
+                drawer.fill = rgBa.opacify(0.6)
+                drawer.stroke = null
+                val widthL = normDb(transform.peakDb(0)) * 256.0
+                val widthR = normDb(transform.peakDb(1)) * 256.0
+                drawer.rectangle(width / 2.0 + 4, height - 32.0, widthR, 8.0)
+                drawer.rectangle(width / 2.0 - widthL - 4, height - 32.0, widthL, 8.0)
+
+                if (!videoCaptureMode) {
                     drawer.draw(fps, seconds)
                 }
+
+                val fadeOutTime = 5.0
+                val total = wavFormat.seconds()
+                val alphaInv = clamp((playBackSeconds - (total - fadeOutTime)) / fadeOutTime, 0.0, 1.0)
+
+                drawer.fill = ColorRGBa(0.0, 0.0, 0.0, alphaInv)
+                drawer.rectangle(Rectangle(0.0, 0.0, width.toDouble(), height.toDouble()))
             }
         }
     }

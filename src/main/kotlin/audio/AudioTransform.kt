@@ -19,7 +19,8 @@ class AudioTransform(
     private val imag: FloatArray = FloatArray(fftSize)
     private val window: FloatArray = FloatArray(fftSize)
     private val peaks = FloatArray(2)
-    private val smoothingCoeff = exp(-1.0 / (fps * 0.1)).toFloat() // 100ms release-time
+    private val smoothingPeakCoeff = exp(-1.0 / (fps * 0.5)).toFloat() // 500ms release-time
+    private val smoothingEnergyCoeff = exp(-1.0 / (fps * 0.1)).toFloat() // 100ms release-time
 
     private var position: Int = 0
 
@@ -46,6 +47,22 @@ class AudioTransform(
         }
     }
 
+    fun peakDb(): Double {
+        var max = 0.0f
+        for (peak in peaks) {
+            max = max(peak, max)
+        }
+        return gainToDb(max)
+    }
+
+    fun peakDb(channelIndex: Int): Double {
+        return gainToDb(peaks[channelIndex])
+    }
+
+    fun channel(channelIndex: Int): FloatArray {
+        return channels[channelIndex]
+    }
+
     private fun next() {
         for (channelIndex in 0..1) {
             val channel = channels[channelIndex]
@@ -57,7 +74,7 @@ class AudioTransform(
                 if (peaks[channelIndex] < peak) {
                     peaks[channelIndex] = peak
                 } else {
-                    peaks[channelIndex] = peak + smoothingCoeff * (peaks[channelIndex] - peak)
+                    peaks[channelIndex] = peak + smoothingPeakCoeff * (peaks[channelIndex] - peak)
                 }
                 real[i] = window[i] * value
             }
@@ -71,7 +88,7 @@ class AudioTransform(
                 if (spectrum[i] <= energy) {
                     spectrum[i] = energy
                 } else {
-                    spectrum[i] = energy + smoothingCoeff * (spectrum[i] - energy)
+                    spectrum[i] = max(energy + smoothingEnergyCoeff * (spectrum[i] - energy), 0.0f)
                 }
             }
             imag.fill(0f)

@@ -62,9 +62,14 @@ class ShaderToy(fsCode: String) {
     }
 
     fun render(size: Vector2, time: Double) {
+        render(size, time, uniforms = { Unit })
+    }
+
+    fun render(size: Vector2, time: Double, uniforms: (Shader) -> Unit) {
         shader.begin()
         shader.uniform("iTime", time.toFloat())
         shader.uniform("iResolution", size)
+        uniforms(shader)
         Driver.instance.drawVertexBuffer(
             shader, listOf(vertexBuffer),
             DrawPrimitive.TRIANGLES, 0, 6
