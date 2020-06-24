@@ -19,7 +19,7 @@ class AudioTransform(
     private val imag: FloatArray = FloatArray(fftSize)
     private val window: FloatArray = FloatArray(fftSize)
     private val peaks = FloatArray(2)
-    private val smoothingPeakCoeff = exp(-1.0 / (fps * 0.5)).toFloat() // 500ms release-time
+    private val smoothingPeakCoeff = exp(-1.0 / (fps * 20.0)).toFloat() // 20000ms release-time
     private val smoothingEnergyCoeff = exp(-1.0 / (fps * 0.1)).toFloat() // 100ms release-time
 
     private var position: Int = 0

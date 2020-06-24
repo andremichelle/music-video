@@ -20,9 +20,7 @@ import kotlin.random.Random
 
 // Todo
 // How to draw a spectrum with one shader call (send height as uniform?)
-// Add audiotool logo
 // Add cover
-// Add HUD frame
 
 @Suppress("ConstantConditionIf")
 fun main() {
