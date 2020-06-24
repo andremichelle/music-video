@@ -5,7 +5,7 @@ import org.openrndr.ffmpeg.ScreenRecorder
 fun main() {
     application {
         configure {
-            width = 1280
+            width = 720
             height = 720
             title = "Shadertoy"
         }
@@ -14,18 +14,17 @@ fun main() {
             @Suppress("ConstantConditionIf")
             if (renderVideo) {
                 extend(ScreenRecorder()) {
-                    outputFile = "tmp/movie.mp4"
+                    outputFile = "tmp/moog.mp4"
                     quitAfterMaximum = true
-                    maximumDuration = 10.0
+                    maximumDuration = 8.0
                     frameRate = 60
                     contentScale = 2.0
                 }
             }
 
-            val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
+            val shaderToy = ShaderToy.fromFile("data/shader/moog.fs")
             extend {
-                shaderToy.render(window.size * window.scale, seconds * 0.25, uniforms = { shader ->
-                    shader.uniform("iZoom", 1.2)
+                shaderToy.render(window.size * window.scale, seconds * 0.125, uniforms = { shader ->
                 })
             }
         }

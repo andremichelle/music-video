@@ -1,10 +1,12 @@
 package draw
 
 import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.ColorBuffer
 import org.openrndr.draw.Drawer
 import org.openrndr.draw.ShadeStyle
 import org.openrndr.extra.parameters.Description
 import org.openrndr.extra.parameters.DoubleParameter
+import org.openrndr.math.Vector2
 import org.openrndr.math.mod
 import org.openrndr.shape.Shape
 import org.openrndr.shape.ShapeContour
@@ -14,6 +16,10 @@ import kotlin.random.Random
 
 class Hud {
     open class Element {
+        class Background(val colorBuffer: ColorBuffer, val tl: Vector2, val scale: Double)
+
+        private var background: Background? = null
+
         var x = 0
         var y = 0
 
@@ -23,9 +29,20 @@ class Hud {
             return this
         }
 
+        open fun background(buffer: ColorBuffer, tl: Vector2, scale: Double): Element {
+            background = Background(buffer, tl, scale)
+            return this
+        }
+
         fun begin(drawer: Drawer) {
             drawer.pushTransforms()
             drawer.translate(x.toDouble(), y.toDouble())
+            background?.let {
+                drawer.image(
+                    it.colorBuffer, it.tl.x, it.tl.y,
+                    it.colorBuffer.width * it.scale, it.colorBuffer.height * it.scale
+                )
+            }
         }
 
         fun end(drawer: Drawer) {

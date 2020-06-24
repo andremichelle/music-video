@@ -33,7 +33,6 @@ vec3 camera(vec3 ro, vec3 lookat, vec2 uv, float zoom) {
 void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     vec2 uv = (fragCoord-iResolution.xy*0.5)/iResolution.y*2.;
     vec4 sphere = vec4(0., 0., 0., 1.0);
-    float t = fract(iTime);
     vec3 ro = vec3(0., 0., 1.);
     vec3 rd = camera(ro, vec3(0.), uv, 1.2);
 	float sp = iSphere(ro, rd, sphere);
@@ -44,8 +43,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 	float theta = atan(pos.x, pos.z)/PI;
 	float phi = acos( -pos.y)/(PI*2.);
     vec2 suv = vec2(.5+theta*.5, phi);
-    suv.x += t*0.03125;
-    float a = smoothstep(1., pos.z*.75, length(fract(suv*192.0)*2.-1.)) * iPeak;
-	float l = abs(.5-2.*suv.y);
+    suv.x += iTime/128.0;
+    float a = smoothstep(1., pos.z*.75, length(fract(suv*128.0)*2.-1.)) * iPeak;
     fragColor = vec4(vec3(0.25*a, 0.97*a, 1.0*a), 1.0);
 }

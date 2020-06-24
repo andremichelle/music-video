@@ -6,7 +6,7 @@ class AudioTransform(
     private val format: AudioFormat,
     private val fftSize: Int = 2048,
     private val minHz: Double = 30.0,
-    private val maxHz: Double = 16000.0,
+    private val maxHz: Double = 14000.0,
     private val minDb: Double = -60.0,
     private val maxDb: Double = -9.0,
     val fps: Double = 60.0
@@ -88,7 +88,7 @@ class AudioTransform(
                 if (spectrum[i] <= energy) {
                     spectrum[i] = energy
                 } else {
-                    spectrum[i] = max(energy + smoothingEnergyCoeff * (spectrum[i] - energy), 0.0f)
+                    spectrum[i] = energy + smoothingEnergyCoeff * (spectrum[i] - energy)
                 }
             }
             imag.fill(0f)

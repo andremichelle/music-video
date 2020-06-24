@@ -1,21 +1,18 @@
-import audio.AudioPlayback
-import audio.AudioTransform
-import audio.WavFormat
-import audio.secondsToBars
+import audio.*
 import draw.*
-import draw.Fps.Companion.draw
+import draw.FpsMeter.Companion.draw
 import draw.Hud.Circle.Companion.draw
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import org.openrndr.draw.colorBuffer
-import org.openrndr.draw.isolatedWithTarget
-import org.openrndr.draw.renderTarget
+import org.openrndr.draw.*
 import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.ffmpeg.ScreenRecorder
+import org.openrndr.math.Vector2
 import org.openrndr.math.clamp
 import org.openrndr.shape.Rectangle
 import java.io.File
 import java.nio.file.Paths
+import kotlin.math.pow
 import kotlin.random.Random
 
 // Try
@@ -29,12 +26,13 @@ import kotlin.random.Random
 
 @Suppress("ConstantConditionIf")
 fun main() {
+    val audioPlaybackMode = false
     val videoCaptureMode = false
 
     application {
         configure {
-            width = 1920 / 2
-            height = 1080 / 2
+            width = 960
+            height = 540
             title = "Video Preview"
         }
         program {
@@ -42,6 +40,12 @@ fun main() {
             val wavFile = File(wavPath)
             val wavFormat = WavFormat.decode(wavFile.readBytes())
             val bpm = 126.0
+
+            val fpsMeter = FpsMeter()
+            val font = org.openrndr.draw.loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
+            val atl = loadImage("data/images/audiotool.png")
+            val sBg = loadImage("data/images/hud-frame-spectrum.png")
+            val wBg = loadImage("data/images/hud-frame-waveform.png")
 
             if (videoCaptureMode) {
                 // call this in terminal to mux audio into video
@@ -58,82 +62,107 @@ fun main() {
                 }
             }
 
-            val audioPlayback = AudioPlayback(wavPath)
-            if (!videoCaptureMode) {
-                audioPlayback.play()
-            }
+            val audioPlayback: AudioPlayback =
+                if (audioPlaybackMode) {
+                    AudioPlaybackImpl(wavPath)
+                } else {
+                    AudioPlaybackNone(this)
+                }
             val transform = AudioTransform(wavFormat)
-            val sw0 = SpectrumWall(32, 16, 10, 4, 1)
-            val sw1 = SpectrumWall(32, 16, 10, 4, 1)
-            sw0.reflect()
-            sw0.move(32, (height - sw0.height()) / 2)
-            sw1.move((width - 32) - sw1.width(), (height - sw0.height()) / 2)
-            val waveform0: Waveform = Waveform(sw0.width().toDouble(), sw0.height().toDouble()).move(
-                32,
-                (height - sw0.height()) / 2 + sw0.height() + 32
-            )
-            val waveform1: Waveform = Waveform(sw1.width().toDouble(), sw1.height().toDouble()).move(
-                (width - 32) - sw1.width(), (height - sw0.height()) / 2 + sw1.height() + 32
-            )
+
+            // Spectra
+            val s0 = Spectrum(26, 21, 8, 4, 2)
+                .background(sBg, Vector2(-22.0, -43.0), 0.25)
+            val s1 = Spectrum(26, 21, 8, 4, 2)
+                .background(sBg, Vector2(-22.0, -43.0), 0.25)
+            s0.move(128, (height - s0.height()) / 2 - 64).reflect()
+            s1.move((width - 128) - s1.width(), (height - s0.height()) / 2 - 64)
+
+            // Waveforms
+            val w0: Waveform = Waveform(282.0, 72.0)
+                .background(wBg, Vector2(-18.0, -20.0), 0.25)
+                .move(116, (height - s0.height()) / 2 + s0.height() + 32)
+
+            val w1: Waveform = Waveform(282.0, 72.0)
+                .background(wBg, Vector2(-18.0, -20.0), 0.25)
+                .move(width - 116 - 282, (height - s0.height()) / 2 + s0.height() + 32)
+
             val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
-            val random = Random(0x303808909)
+
+            val random = Random(0x303909)
             val rgBa = ColorRGBa.fromHex(0x41F8FF)
-            val circleA = Hud.Circle(random, 6 + random.nextInt(5), 8.0, 48.0)
-                .move(width / 2, height / 2 - 64)
-            val circleB = Hud.Circle(random, 6 + random.nextInt(5), 8.0, 48.0)
-                .move(width / 2, height / 2 + 64)
+
+            val circles: List<Hud.Circle> = listOf(
+                Hud.Circle(random, 6 + random.nextInt(7), 8.0, 48.0)
+                    .move(width / 2, height / 2 - 128),
+                Hud.Circle(random, 6 + random.nextInt(5), 8.0, 48.0)
+                    .move(width / 2, height / 2 - 24),
+                Hud.Circle(random, 6 + random.nextInt(7), 8.0, 48.0)
+                    .move(width / 2, height / 2 + 128)
+            )
+
             val rt = renderTarget(width, height) {
                 colorBuffer()
                 depthBuffer()
             }
             val blurred = colorBuffer(width, height)
             val bloom = GaussianBloom()
-            bloom.window = 5
-            bloom.sigma = 0.1
+            bloom.window = 25
+            bloom.sigma = 1.0
             bloom.gain = 2.0
 
             val minDb: Double = -72.0
             val maxDb: Double = -0.0
             val normDb: (Double) -> Double = { db -> (db - minDb) / (maxDb - minDb) }
 
-            val fps = Fps()
+            if (!videoCaptureMode) {
+                audioPlayback.play()
+            }
             extend {
                 val playBackSeconds = if (videoCaptureMode) seconds else audioPlayback.seconds()
                 val bars = secondsToBars(playBackSeconds, bpm)
                 transform.advance(playBackSeconds)
-                shaderToy.render(window.size * window.scale, playBackSeconds * 2.0) { shader ->
-                    shader.uniform("iPeak", 0.5 + normDb(transform.peakDb()) * 0.5)
+                shaderToy.render(window.size * window.scale, playBackSeconds) { shader ->
+                    val value = normDb(transform.peakDb())
+                    shader.uniform("iPeak", 0.125 + value.pow(16.0) * 0.25)
                 }
+                drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)
                 drawer.isolatedWithTarget(rt) {
-                    drawer.clear(ColorRGBa.TRANSPARENT)
-                    drawer.draw(listOf(circleA, circleB), rgBa, bars * 2.0)
                     drawer.stroke = null
-                    sw0.draw(drawer, rgBa, transform, 0)
-                    sw1.draw(drawer, rgBa, transform, 1)
+                    drawer.clear(ColorRGBa.TRANSPARENT)
+                    s0.draw(drawer, rgBa, transform, 0)
+                    s1.draw(drawer, rgBa, transform, 1)
+
                     drawer.fill = rgBa
-                    waveform0.render(drawer, transform.channel(0))
-                    waveform1.render(drawer, transform.channel(1))
+                    w0.render(drawer, transform.channel(0))
+                    w1.render(drawer, transform.channel(1))
+
+                    drawer.draw(circles, rgBa, bars * 2.0)
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
                 drawer.image(blurred)
 
-                drawer.fill = rgBa.opacify(0.6)
+                drawer.fill = rgBa.opacify(0.3)
                 drawer.stroke = null
                 val widthL = normDb(transform.peakDb(0)) * 256.0
                 val widthR = normDb(transform.peakDb(1)) * 256.0
                 drawer.rectangle(width / 2.0 + 4, height - 32.0, widthR, 8.0)
                 drawer.rectangle(width / 2.0 - widthL - 4, height - 32.0, widthL, 8.0)
 
-                if (!videoCaptureMode) {
-                    drawer.draw(fps, seconds)
-                }
+                drawer.fontMap = font
+                drawer.fill = ColorRGBa.WHITE
+                drawer.text("Kepz", 8.0, 16.0)
+                drawer.text("minima 01", 8.0, 32.0)
 
                 val fadeOutTime = 5.0
                 val total = wavFormat.seconds()
                 val alphaInv = clamp((playBackSeconds - (total - fadeOutTime)) / fadeOutTime, 0.0, 1.0)
-
                 drawer.fill = ColorRGBa(0.0, 0.0, 0.0, alphaInv)
                 drawer.rectangle(Rectangle(0.0, 0.0, width.toDouble(), height.toDouble()))
+
+                if (!videoCaptureMode) {
+                    drawer.draw(fpsMeter, seconds)
+                }
             }
         }
     }

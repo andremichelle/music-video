@@ -2,11 +2,13 @@ package draw
 
 import audio.AudioTransform
 import org.openrndr.color.ColorRGBa
+import org.openrndr.draw.ColorBuffer
 import org.openrndr.draw.Drawer
+import org.openrndr.math.Vector2
 import kotlin.math.exp
 import kotlin.math.max
 
-class SpectrumWall(
+class Spectrum(
     private val numCols: Int,
     private val numRows: Int,
     private val blockWidth: Int,
@@ -17,9 +19,13 @@ class SpectrumWall(
     private val history: FloatArray = FloatArray(numCols)
     private var reflect = false
 
-    fun reflect(value: Boolean = true): SpectrumWall {
+    fun reflect(value: Boolean = true): Spectrum {
         reflect = value
         return this
+    }
+
+    override fun background(buffer: ColorBuffer, tl: Vector2, scale: Double): Spectrum {
+        return super.background(buffer, tl, scale) as Spectrum
     }
 
     fun draw(
@@ -35,18 +41,19 @@ class SpectrumWall(
         }
         val cValue = rgBa.opacify(0.40)
         val smoothingCoeff = exp(-1.0 / (transform.fps * 0.3)).toFloat() // 300ms release-time
-        for (c in channelIndex until numCols) {
+        for (c in 0 until numCols) {
             val energyNorm = values[c]
             if (history[c] < energyNorm) {
                 history[c] = energyNorm
             } else if (history[c] >= 0f) {
-                history[c] = energyNorm + smoothingCoeff * (history[c] - energyNorm)
+                val target = max(0.0f, energyNorm)
+                history[c] = target + smoothingCoeff * (history[c] - target)
             }
             var peak = true
             val x = c * (blockWidth + blockPadding)
             for (r in channelIndex until numRows) {
                 val threshold = 1f - r / (numRows - 1).toFloat()
-                if (peak && threshold < history[c]) {
+                if (peak && threshold <= history[c]) {
                     peak = false
                     drawer.fill = rgBa
                 } else if (threshold <= energyNorm) {
@@ -76,8 +83,8 @@ class SpectrumWall(
         return numRows * blockHeight + (numRows - 1) * blockPadding
     }
 
-    override fun move(x: Int, y: Int): SpectrumWall {
-        return super.move(x, y) as SpectrumWall
+    override fun move(x: Int, y: Int): Spectrum {
+        return super.move(x, y) as Spectrum
     }
 
     init {

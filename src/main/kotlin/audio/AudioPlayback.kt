@@ -5,8 +5,29 @@ import net.beadsproject.beads.core.IOAudioFormat
 import net.beadsproject.beads.core.io.JavaSoundAudioIO
 import net.beadsproject.beads.data.SampleManager
 import net.beadsproject.beads.ugens.SamplePlayer
+import org.openrndr.Program
 
-class AudioPlayback(samplePath: String) {
+interface AudioPlayback {
+    fun play()
+
+    fun seconds(): Double
+
+    fun stop()
+}
+
+class AudioPlaybackNone(private val program: Program) : AudioPlayback {
+    override fun play() {
+    }
+
+    override fun seconds(): Double {
+        return program.seconds
+    }
+
+    override fun stop() {
+    }
+}
+
+class AudioPlaybackImpl(samplePath: String) : AudioPlayback {
     private val context: AudioContext = AudioContext(
         JavaSoundAudioIO(512),
         512,
@@ -19,18 +40,18 @@ class AudioPlayback(samplePath: String) {
         context.out.addInput(samplePlayer)
     }
 
-    fun play() {
+    override fun play() {
         if (!context.isRunning) {
             context.start()
         }
         samplePlayer.start()
     }
 
-    fun seconds(): Double {
+    override fun seconds(): Double {
         return samplePlayer.position / 1000.0
     }
 
-    fun stop() {
+    override fun stop() {
         println("Stop")
         context.stop()
         samplePlayer.kill()

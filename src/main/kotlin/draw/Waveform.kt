@@ -1,12 +1,19 @@
 package draw
 
+import org.openrndr.draw.ColorBuffer
 import org.openrndr.draw.Drawer
+import org.openrndr.math.Vector2
 import org.openrndr.shape.Rectangle
 import kotlin.math.floor
 
+@Suppress("MemberVisibilityCanBePrivate")
 class Waveform(val width: Double, val height: Double) : Hud.Element() {
     override fun move(x: Int, y: Int): Waveform {
         return super.move(x, y) as Waveform
+    }
+
+    override fun background(buffer: ColorBuffer, tl: Vector2, scale: Double): Waveform {
+        return super.background(buffer, tl, scale) as Waveform
     }
 
     private val topValue = 1.0
