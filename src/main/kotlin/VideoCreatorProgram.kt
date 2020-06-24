@@ -70,9 +70,9 @@ fun main() {
 
             // Spectra
             val s0 = Spectrum(26, 21, 8, 4, 2)
-                .background(sBg, Vector2(-22.0, -43.0), 0.25)
+                .background(sBg, Vector2(-22.0, -35.0), 0.25)
             val s1 = Spectrum(26, 21, 8, 4, 2)
-                .background(sBg, Vector2(-22.0, -43.0), 0.25)
+                .background(sBg, Vector2(-22.0, -35.0), 0.25)
             s0.move(128, (height - s0.height()) / 2 - 64).reflect()
             s1.move((width - 128) - s1.width(), (height - s0.height()) / 2 - 64)
 
