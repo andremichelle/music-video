@@ -31,13 +31,21 @@ class AudioPlaybackImpl(samplePath: String) : AudioPlayback {
     private val context: AudioContext = AudioContext(
         JavaSoundAudioIO(512),
         512,
-        IOAudioFormat(48000.0f, 16, 0, 2)
+        IOAudioFormat(44100.0f, 16, 0, 2)
     )
     private val samplePlayer: SamplePlayer
 
     init {
         samplePlayer = SamplePlayer(context, SampleManager.sample(samplePath))
         context.out.addInput(samplePlayer)
+
+        Runtime.getRuntime().addShutdownHook(object : Thread() {
+            override fun run() {
+                println("shutdown")
+                samplePlayer.kill()
+                context.stop()
+            }
+        })
     }
 
     override fun play() {

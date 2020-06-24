@@ -53,7 +53,7 @@ class Spectrum(
             val x = c * (blockWidth + blockPadding)
             for (r in channelIndex until numRows) {
                 val threshold = 1f - r / (numRows - 1).toFloat()
-                if (peak && threshold <= history[c]||true) {
+                if (peak && threshold <= history[c]) {
                     peak = false
                     drawer.fill = rgBa
                 } else if (threshold <= energyNorm) {

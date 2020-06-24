@@ -6,25 +6,30 @@ import org.openrndr.application
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.*
 import org.openrndr.extra.fx.blur.GaussianBloom
+import org.openrndr.extra.fx.color.ChromaticAberration
 import org.openrndr.ffmpeg.ScreenRecorder
 import org.openrndr.math.Vector2
 import org.openrndr.math.clamp
+import org.openrndr.math.mod
 import org.openrndr.shape.Rectangle
 import java.io.File
 import java.nio.file.Paths
-import kotlin.math.pow
+import kotlin.math.*
 import kotlin.random.Random
 
 // Try
 // https://www.shadertoy.com/view/ls3Xzf (glitch)
+// https://github.com/openrndr/openrndr/blob/master/openrndr-openal/src/main/kotlin/AudioPlayer.kt#L23 (Shutdown hook)
+// Check out the layer feature https://guide.openrndr.org/#/10_OPENRNDR_Extras/C11_Poisson_fills
 
 // Todo
 // How to draw a spectrum with one shader call (send height as uniform?)
 // Add cover
+// Load track data from api and parse json https://github.com/Kotlin/kotlinx.serialization
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val audioPlaybackMode = false
+    val audioPlaybackMode = true
     val videoCaptureMode = false
 
     application {
@@ -34,10 +39,10 @@ fun main() {
             title = "Video Preview"
         }
         program {
-            val wavPath = "data/music/78qeujew8w.wav"
+            val wavPath = "data/music/t7v13b2wyz83.wav"
             val wavFile = File(wavPath)
             val wavFormat = WavFormat.decode(wavFile.readBytes())
-            val bpm = 126.0
+            val bpm = 100.0
 
             val fpsMeter = FpsMeter()
             val font = org.openrndr.draw.loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
@@ -109,10 +114,11 @@ fun main() {
             bloom.window = 25
             bloom.sigma = 1.0
             bloom.gain = 2.0
+            val chromaticAberration = ChromaticAberration()
 
             val minDb: Double = -72.0
             val maxDb: Double = -0.0
-            val normDb: (Double) -> Double = { db -> (db - minDb) / (maxDb - minDb) }
+            val normDb: (Double) -> Double = { db -> clamp((db - minDb) / (maxDb - minDb), 0.0, 1.0) }
 
             if (!videoCaptureMode) {
                 audioPlayback.play()
@@ -139,6 +145,11 @@ fun main() {
                     drawer.draw(circles, rgBa, bars * 2.0)
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
+                val timedInterval = max(ceil(1.0 - mod(bars, 8.0)), 0.0)
+                chromaticAberration.aberrationFactor =
+                    (1.0 + cos(bars * PI * 2.0)) +
+                    cos(bars * PI * 0.5).pow(32.0) * 8.0 * timedInterval
+                chromaticAberration.apply(blurred, blurred)
                 drawer.image(blurred)
 
                 drawer.fill = rgBa.opacify(0.3)

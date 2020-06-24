@@ -10,9 +10,8 @@ import org.openrndr.draw.renderTarget
 import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.extra.fx.color.ChromaticAberration
 import org.openrndr.ffmpeg.ScreenRecorder
-import kotlin.math.PI
-import kotlin.math.cos
-import kotlin.math.pow
+import org.openrndr.math.mod
+import kotlin.math.*
 import kotlin.random.Random
 
 fun main() {
@@ -73,7 +72,9 @@ fun main() {
                     drawer.draw(crosses, rgBa.opacify(0.8))
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
-                chromaticAberration.aberrationFactor = cos(seconds / 8.0 * PI).pow(1024) * 8.0
+
+                val timedInterval = max(ceil(1.0 - mod(seconds, 8.0)), 0.0)
+                chromaticAberration.aberrationFactor = cos(seconds * PI * 0.5).pow(32.0) * 16.0 * timedInterval
                 chromaticAberration.apply(blurred, blurred)
                 drawer.image(blurred)
             }
