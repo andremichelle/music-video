@@ -84,6 +84,7 @@ fun main() {
             val w1: Waveform = Waveform(282.0, 72.0)
                 .background(wBg, Vector2(-18.0, -20.0), 0.25)
                 .move(width - 116 - 282, (height - s0.height()) / 2 + s0.height() + 32)
+                .reflect()
 
             val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
 

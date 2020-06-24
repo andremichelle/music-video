@@ -19,8 +19,18 @@ class Waveform(val width: Double, val height: Double) : Hud.Element() {
     private val topValue = 1.0
     private val bottomValue = -1.0
 
+    private var reflect = false
+
+    fun reflect(value: Boolean = true): Waveform {
+        reflect = value
+        return this
+    }
+
     fun render(drawer: Drawer, raw: FloatArray) {
         begin(drawer)
+        if(reflect) {
+            raw.reverse()
+        }
         val samplesEachPixel = raw.size / width
         val scale: Double = (height - 1.0) / (bottomValue - topValue)
         val rectangles: MutableList<Rectangle> = mutableListOf()
