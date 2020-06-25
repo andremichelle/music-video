@@ -27,13 +27,13 @@ import kotlin.random.Random
 // Todo
 // How to draw a spectrum with one shader call (send height as uniform?)
 // Allow to place shadertoy arbitrary on stage
-// Add cover
+// Nerdy timecodes
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val trackKey = "volution"
+    val trackKey = "gmo6wo8484"
     val audioPlaybackMode = false
-    val videoCaptureMode = false
+    val videoCaptureMode = true
 
     application {
         configure {
@@ -63,7 +63,7 @@ fun main() {
             if (videoCaptureMode) {
                 // call this in terminal to mux audio into video
                 println(
-                    "ffmpeg -i ${Paths.get("tmp/movie.mp4").toAbsolutePath()} -i ${wavFile.toPath()
+                    "ffmpeg -i ${Paths.get("tmp/$trackKey.mp4").toAbsolutePath()} -i ${wavFile.toPath()
                         .toAbsolutePath()} -c copy tmp/movie.mkv"
                 )
                 extend(ScreenRecorder()) {
@@ -98,8 +98,6 @@ fun main() {
                 .move(s1.x - 3, cy + 104)
                 .reflect()
 
-            val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
-
             val random = Random(0x306709)
             val rgBa = ColorRGBa.fromHex(0x41F8FF)
 
@@ -125,6 +123,8 @@ fun main() {
 
             val normDb = normDb()
 
+            val shaderToy = ShaderToy.fromFile("data/shader/whack.fs")
+
             if (!videoCaptureMode) {
                 audioPlayback.play()
             }
@@ -133,11 +133,11 @@ fun main() {
                 val playBackSeconds = if (videoCaptureMode) seconds else audioPlayback.seconds()
                 val bars = secondsToBars(playBackSeconds, track.bpm)
                 transform.advance(playBackSeconds)
-                shaderToy.render(window.size * window.scale, playBackSeconds*0.5) { shader ->
+                shaderToy.render(window.size * window.scale, playBackSeconds * 0.5) { shader ->
                     val value = normDb(transform.peakDb())
-                    shader.uniform("iPeak", 0.125 + value.pow(16.0) * 0.25)
-                    shader.uniform("iZoom", 1.2)
-                    shader.uniform("iRadius", 128.0)
+//                    shader.uniform("iPeak", 0.125 + value.pow(16.0) * 0.25)
+//                    shader.uniform("iZoom", 1.2)
+//                    shader.uniform("iRadius", 128.0)
                 }
                 drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)
                 drawer.isolatedWithTarget(rt) {
@@ -175,9 +175,18 @@ fun main() {
                 drawer.rectangle(width / 2.0 + 4, height - 32.0, widthR, 8.0)
                 drawer.rectangle(width / 2.0 - widthL - 4, height - 32.0, widthL, 8.0)
 
+                val fadeInTime = 1.0
                 val fadeOutTime = 5.0
                 val total = wavFormat.seconds()
-                val alphaInv = clamp((playBackSeconds - (total - fadeOutTime)) / fadeOutTime, 0.0, 1.0)
+                val alphaInv = clamp(
+                    (playBackSeconds - (total - fadeOutTime)) / fadeOutTime,
+                    0.0,
+                    1.0
+                ) + clamp(
+                    1.0 - playBackSeconds / fadeInTime,
+                    0.0,
+                    1.0
+                )
                 drawer.fill = ColorRGBa(0.0, 0.0, 0.0, alphaInv)
                 drawer.rectangle(Rectangle(0.0, 0.0, width.toDouble(), height.toDouble()))
 
