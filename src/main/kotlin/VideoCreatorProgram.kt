@@ -26,10 +26,12 @@ import kotlin.random.Random
 
 // Todo
 // How to draw a spectrum with one shader call (send height as uniform?)
+// Allow to place shadertoy arbitrary on stage
 // Add cover
 
 @Suppress("ConstantConditionIf")
 fun main() {
+    val trackKey = "volution"
     val audioPlaybackMode = false
     val videoCaptureMode = false
 
@@ -45,8 +47,6 @@ fun main() {
                 scale = 2.0
             }
 
-            val trackKey = "volution"
-
             val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/$trackKey.wav"
             val wavFile = File(wavPath)
             val wavFormat = WavFormat.decode(wavFile.readBytes())
@@ -57,6 +57,8 @@ fun main() {
             val atl = loadImage("data/images/audiotool.png")
             val sBg = loadImage("data/images/hud-frame-spectrum.png")
             val wBg = loadImage("data/images/hud-frame-waveform.png")
+            val cBg = loadImage("data/images/hud-frame-cover.png")
+            val cov = loadImage(track.cover())
 
             if (videoCaptureMode) {
                 // call this in terminal to mux audio into video
@@ -127,12 +129,15 @@ fun main() {
                 audioPlayback.play()
             }
             extend {
+                drawer.clear(ColorRGBa.BLACK)
                 val playBackSeconds = if (videoCaptureMode) seconds else audioPlayback.seconds()
                 val bars = secondsToBars(playBackSeconds, track.bpm)
                 transform.advance(playBackSeconds)
-                shaderToy.render(window.size * window.scale, playBackSeconds) { shader ->
+                shaderToy.render(window.size * window.scale, playBackSeconds*0.5) { shader ->
                     val value = normDb(transform.peakDb())
                     shader.uniform("iPeak", 0.125 + value.pow(16.0) * 0.25)
+                    shader.uniform("iZoom", 1.2)
+                    shader.uniform("iRadius", 128.0)
                 }
                 drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)
                 drawer.isolatedWithTarget(rt) {
@@ -145,6 +150,8 @@ fun main() {
                     w0.render(drawer, transform.channel(0))
                     w1.render(drawer, transform.channel(1))
 
+                    drawer.image(cBg, s0.x - 192.0, s0.y - 10.0)
+
                     drawer.draw(circles, rgBa, bars * 2.0)
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
@@ -154,6 +161,7 @@ fun main() {
                             cos(bars * PI * 0.5).pow(32.0) * 8.0 * timedInterval
                 chromaticAberration.apply(blurred, blurred)
                 drawer.image(blurred)
+                drawer.image(cov, s0.x - 192.0 + 14.0, s0.y - 10.0 + 14.0, 128.0, 128.0)
 
                 drawer.fill = rgBa.opacify(0.3)
                 drawer.stroke = null

@@ -36,7 +36,11 @@ class TrackApi {
         val isNextTrack: Boolean,
         val joinPolicy: Int,
         val license: Int
-    )
+    ) {
+        fun cover(): URL {
+            return URL("https:$coverUrl")
+        }
+    }
 
     @Serializable
     class Response(

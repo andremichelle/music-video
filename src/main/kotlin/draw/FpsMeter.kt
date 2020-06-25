@@ -5,7 +5,7 @@ import org.openrndr.draw.Drawer
 import org.openrndr.draw.loadFont
 
 class FpsMeter {
-    private val font = loadFont("data/fonts/IBMPlexMono-Regular.ttf", 13.0)
+    private val font = loadFont("data/fonts/IBMPlexMono-Regular.ttf", 11.0)
 
     private var lastTimeStamp: Double = Double.NaN
     private var current = 0
@@ -16,7 +16,7 @@ class FpsMeter {
             fpsMeter.update(seconds)
             fontMap = fpsMeter.font
             fill = ColorRGBa.WHITE
-            text("fps: ${fpsMeter.current}", 16.0, height - 16.0)
+            text("fps: ${fpsMeter.current}", 4.0, height - 4.0)
         }
     }
 

@@ -1,4 +1,6 @@
+uniform float iZoom;
 uniform float iPeak;
+uniform float iRadius;
 
 #define PI 3.14159
 #define eps 0.001
@@ -34,7 +36,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
     vec2 uv = (fragCoord-iResolution.xy*0.5)/iResolution.y*2.;
     vec4 sphere = vec4(0., 0., 0., 1.0);
     vec3 ro = vec3(0., 0., 1.);
-    vec3 rd = camera(ro, vec3(0.), uv, 1.2);
+    vec3 rd = camera(ro, vec3(0.), uv, iZoom);
 	float sp = iSphere(ro, rd, sphere);
     if(-1.==sp) {
         return;
@@ -44,6 +46,6 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord ) {
 	float phi = acos( -pos.y)/(PI*2.);
     vec2 suv = vec2(.5+theta*.5, phi);
     suv.x += iTime/128.0;
-    float a = smoothstep(1., pos.z*.75, length(fract(suv*128.0)*2.-1.)) * iPeak;
-    fragColor = vec4(vec3(0.25*a, 0.97*a, 1.0*a), 1.0);
+    float a = smoothstep(1., pos.z*.75, length(fract(suv*iRadius)*2.-1.)) * iPeak;
+    fragColor = vec4(vec3(0.25*a, 0.97*a, 1.0*a), a);
 }
