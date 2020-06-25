@@ -172,6 +172,5 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         vec2 uv2 = uv + weyl_2d(i)/iResolution.y*1.25;
         fragColor += vec4(pixel_color(uv2, iTime), 1.);
     }
-    fragColor.xyz *= 0.5;
 	fragColor.xyz = fragColor.xyz/fragColor.w;
 }

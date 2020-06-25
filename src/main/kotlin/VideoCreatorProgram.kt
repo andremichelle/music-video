@@ -28,6 +28,7 @@ import kotlin.random.Random
 // How to draw a spectrum with one shader call (send height as uniform?)
 // Allow to place shadertoy arbitrary on stage
 // Nerdy timecodes
+// Hud should be white
 
 @Suppress("ConstantConditionIf")
 fun main() {
@@ -64,7 +65,7 @@ fun main() {
                 // call this in terminal to mux audio into video
                 println(
                     "ffmpeg -i ${Paths.get("tmp/$trackKey.mp4").toAbsolutePath()} -i ${wavFile.toPath()
-                        .toAbsolutePath()} -c copy tmp/movie.mkv"
+                        .toAbsolutePath()} -c copy tmp/$trackKey.mkv"
                 )
                 extend(ScreenRecorder()) {
                     outputFile = "tmp/$trackKey.mp4"
@@ -99,7 +100,7 @@ fun main() {
                 .reflect()
 
             val random = Random(0x306709)
-            val rgBa = ColorRGBa.fromHex(0x41F8FF)
+            val rgBa = ColorRGBa.fromHex(0xFFFFFF)
 
             val circles: List<Hud.Circle> = listOf(
                 Hud.Circle(random, 5, 4.0, 24.0)
@@ -139,6 +140,12 @@ fun main() {
 //                    shader.uniform("iZoom", 1.2)
 //                    shader.uniform("iRadius", 128.0)
                 }
+
+                val yDark = 280.0
+                drawer.stroke = null
+                drawer.fill = ColorRGBa(0.0, 0.0, 0.0, 0.6)
+                drawer.rectangle(Rectangle(0.0, yDark, width.toDouble(), height.toDouble() - yDark))
+
                 drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)
                 drawer.isolatedWithTarget(rt) {
                     drawer.stroke = null
