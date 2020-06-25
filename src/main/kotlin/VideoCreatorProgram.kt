@@ -33,7 +33,7 @@ import kotlin.random.Random
 fun main() {
     val trackKey = "gmo6wo8484"
     val audioPlaybackMode = false
-    val videoCaptureMode = true
+    val videoCaptureMode = false
 
     application {
         configure {
