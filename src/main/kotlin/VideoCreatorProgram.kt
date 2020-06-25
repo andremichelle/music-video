@@ -5,10 +5,8 @@ import draw.Hud.Circle.Companion.draw
 import net.TrackApi
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import org.openrndr.draw.colorBuffer
-import org.openrndr.draw.isolatedWithTarget
-import org.openrndr.draw.loadImage
-import org.openrndr.draw.renderTarget
+import org.openrndr.draw.*
+import org.openrndr.extensions.Screenshots
 import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.extra.fx.color.ChromaticAberration
 import org.openrndr.ffmpeg.ScreenRecorder
@@ -29,11 +27,10 @@ import kotlin.random.Random
 // Todo
 // How to draw a spectrum with one shader call (send height as uniform?)
 // Add cover
-// Load track data from api and parse json https://github.com/Kotlin/kotlinx.serialization
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val audioPlaybackMode = true
+    val audioPlaybackMode = false
     val videoCaptureMode = false
 
     application {
@@ -43,6 +40,11 @@ fun main() {
             title = "Video Preview"
         }
         program {
+            extend(Screenshots()) {
+                folder = "tmp/"
+                scale = 2.0
+            }
+
             val trackKey = "volution"
 
             val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/$trackKey.wav"
@@ -63,7 +65,7 @@ fun main() {
                         .toAbsolutePath()} -c copy tmp/movie.mkv"
                 )
                 extend(ScreenRecorder()) {
-                    outputFile = "tmp/movie.mp4"
+                    outputFile = "tmp/$trackKey.mp4"
                     quitAfterMaximum = true
                     maximumDuration = wavFormat.seconds()
                     frameRate = 60
@@ -72,7 +74,7 @@ fun main() {
             }
 
             val audioPlayback: AudioPlayback =
-                if (audioPlaybackMode) {
+                if (audioPlaybackMode && !videoCaptureMode) {
                     AudioPlaybackImpl(wavPath)
                 } else {
                     AudioPlaybackNone(this)
@@ -80,35 +82,32 @@ fun main() {
             val transform = AudioTransform(wavFormat)
 
             // Spectra
-            val s0 = Spectrum(26, 21, 8, 4, 2)
-                .background(sBg, Vector2(-22.0, -35.0), 0.25)
-            val s1 = Spectrum(26, 21, 8, 4, 2)
-                .background(sBg, Vector2(-22.0, -35.0), 0.25)
-            s0.move(128, (height - s0.height()) / 2 - 64).reflect()
-            s1.move((width - 128) - s1.width(), (height - s0.height()) / 2 - 64)
+            val s0 = createSpectrum(sBg)
+            val s1 = createSpectrum(sBg)
+            val cx = width / 2 - 170
+            val cy = height - 320 + 128
+            s0.move(cx, cy).reflect()
+            s1.move(cx + 208, cy)
 
             // Waveforms
-            val w0: Waveform = Waveform(282.0, 72.0)
-                .background(wBg, Vector2(-18.0, -20.0), 0.25)
-                .move(116, (height - s0.height()) / 2 + s0.height() + 32)
-
-            val w1: Waveform = Waveform(282.0, 72.0)
-                .background(wBg, Vector2(-18.0, -20.0), 0.25)
-                .move(width - 116 - 282, (height - s0.height()) / 2 + s0.height() + 32)
+            val w0: Waveform = createWaveform(wBg)
+                .move(s0.x - 3, cy + 104)
+            val w1: Waveform = createWaveform(wBg)
+                .move(s1.x - 3, cy + 104)
                 .reflect()
 
             val shaderToy = ShaderToy.fromFile("data/shader/showmaster.fs")
 
-            val random = Random(0x303909)
+            val random = Random(0x306709)
             val rgBa = ColorRGBa.fromHex(0x41F8FF)
 
             val circles: List<Hud.Circle> = listOf(
-                Hud.Circle(random, 6 + random.nextInt(7), 8.0, 48.0)
-                    .move(width / 2, height / 2 - 128),
-                Hud.Circle(random, 6 + random.nextInt(5), 8.0, 48.0)
-                    .move(width / 2, height / 2 - 24),
-                Hud.Circle(random, 6 + random.nextInt(7), 8.0, 48.0)
-                    .move(width / 2, height / 2 + 128)
+                Hud.Circle(random, 5, 4.0, 24.0)
+                    .move(cx + 169, cy + 14),
+                Hud.Circle(random, 5, 4.0, 24.0)
+                    .move(cx + 169, cy + 70),
+                Hud.Circle(random, 5, 4.0, 24.0)
+                    .move(cx + 169, cy + 126)
             )
 
             val rt = renderTarget(width, height) {
@@ -122,9 +121,7 @@ fun main() {
             bloom.gain = 2.0
             val chromaticAberration = ChromaticAberration()
 
-            val minDb: Double = -72.0
-            val maxDb: Double = -0.0
-            val normDb: (Double) -> Double = { db -> clamp((db - minDb) / (maxDb - minDb), 0.0, 1.0) }
+            val normDb = normDb()
 
             if (!videoCaptureMode) {
                 audioPlayback.play()
@@ -160,8 +157,8 @@ fun main() {
 
                 drawer.fill = rgBa.opacify(0.3)
                 drawer.stroke = null
-                val widthL = normDb(transform.peakDb(0)) * 256.0
-                val widthR = normDb(transform.peakDb(1)) * 256.0
+                val widthL = normDb(transform.peakDb(0)) * 172.0
+                val widthR = normDb(transform.peakDb(1)) * 172.0
                 drawer.rectangle(width / 2.0 + 4, height - 32.0, widthR, 8.0)
                 drawer.rectangle(width / 2.0 - widthL - 4, height - 32.0, widthL, 8.0)
 
@@ -183,3 +180,9 @@ fun main() {
         }
     }
 }
+
+private fun createWaveform(wBg: ColorBuffer) = Waveform(135.0, 36.0)
+    .background(wBg, Vector2(-9.0, -10.0), 1.0)
+
+private fun createSpectrum(sBg: ColorBuffer) = Spectrum(26, 21, 4, 2, 1)
+    .background(sBg, Vector2(-8.0, -18.0), 1.0)

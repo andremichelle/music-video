@@ -5,6 +5,7 @@ import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.colorBuffer
 import org.openrndr.draw.isolatedWithTarget
 import org.openrndr.draw.renderTarget
+import org.openrndr.extensions.Screenshots
 import org.openrndr.extensions.SingleScreenshot
 import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.extra.fx.color.ChromaticAberration
@@ -21,9 +22,9 @@ fun main() {
             title = "Hud"
         }
         program {
-            extend(SingleScreenshot()) {
-                outputFile = "tmp/screenshot.png"
-                quitAfterScreenshot = true
+            extend(Screenshots()) {
+                folder = "tmp/"
+                scale = 2.0
             }
             val random = Random(0x30312069)
             val rgBa = ColorRGBa.fromHex(0xFFFFFF)
@@ -45,7 +46,7 @@ fun main() {
             extend {
                 drawer.isolatedWithTarget(rt) {
                     drawer.clear(ColorRGBa.TRANSPARENT)
-                    drawer.draw(circle, rgBa, 1.5)
+                    drawer.draw(circle, rgBa, seconds)
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
                 chromaticAberration.aberrationFactor = cos(seconds / 8.0 * PI).pow(1024) * 8.0

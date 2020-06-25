@@ -49,9 +49,7 @@ class TrackApi {
 
     companion object {
         fun fetch(key: String): Response {
-            val string = URL("https://api.audiotool.com/track/$key.json").readText()
-            println(string)
-            return Json.parse(Response.serializer(), string)
+            return Json.parse(Response.serializer(), URL("https://api.audiotool.com/track/$key.json").readText())
         }
     }
 }
