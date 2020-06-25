@@ -163,7 +163,7 @@ class Hud {
                 val nSec = arcRatio / numSections.toDouble()
                 val arcLength: Double = lengthRatio * nSec
                 val contours: List<ShapeContour> = List(numSections) { index ->
-                    val u0 = startAngle + index * nSec
+                    val u0 = startAngle + index * nSec - arcLength * 0.5
                     createArc(
                         radius - width,
                         radius + width,

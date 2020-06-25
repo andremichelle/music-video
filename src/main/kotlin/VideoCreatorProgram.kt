@@ -44,6 +44,7 @@ fun main() {
             val wavFormat = WavFormat.decode(wavFile.readBytes())
             val bpm = 100.0
 
+
             val fpsMeter = FpsMeter()
             val font = org.openrndr.draw.loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
             val atl = loadImage("data/images/audiotool.png")

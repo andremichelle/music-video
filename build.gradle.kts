@@ -1,7 +1,7 @@
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 import org.gradle.internal.os.OperatingSystem
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 /* the name of this project, default is the template version but you are free to change these */
 group = "org.openrndr.template"
@@ -95,6 +95,7 @@ val kotlinVersion = "1.3.72"
 plugins {
     java
     kotlin("jvm") version ("1.3.72")
+    kotlin("plugin.serialization") version "1.3.70"
     id("com.github.johnrengelman.shadow") version ("5.2.0")
     id("org.beryx.runtime") version ("1.8.1")
 }
@@ -176,7 +177,9 @@ dependencies {
 
     implementation(kotlin("stdlib-jdk8"))
     testImplementation("junit", "junit", "4.12")
-    implementation("com.github.orsjb","beads","migrate_to_gradle-SNAPSHOT")
+    implementation("com.github.orsjb", "beads", "migrate_to_gradle-SNAPSHOT")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-runtime:0.20.0")
 }
 
 // --------------------------------------------------------------------------------------------------------------------
