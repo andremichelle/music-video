@@ -153,6 +153,11 @@ fun main() {
                     drawer.image(cBg, s0.x - 192.0, s0.y - 10.0)
 
                     drawer.draw(circles, rgBa, bars * 2.0)
+
+                    drawer.fontMap = font
+                    drawer.fill = ColorRGBa.WHITE
+                    drawer.text(track.user.name, 132.0, 310.0)
+                    drawer.text(track.name, 132.0, 310.0 + 16.0)
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
                 val timedInterval = max(ceil(1.0 - mod(bars, 8.0)), 0.0)
@@ -169,11 +174,6 @@ fun main() {
                 val widthR = normDb(transform.peakDb(1)) * 172.0
                 drawer.rectangle(width / 2.0 + 4, height - 32.0, widthR, 8.0)
                 drawer.rectangle(width / 2.0 - widthL - 4, height - 32.0, widthL, 8.0)
-
-                drawer.fontMap = font
-                drawer.fill = ColorRGBa.WHITE
-                drawer.text(track.user.name, 8.0, 16.0)
-                drawer.text(track.name, 8.0, 32.0)
 
                 val fadeOutTime = 5.0
                 val total = wavFormat.seconds()
