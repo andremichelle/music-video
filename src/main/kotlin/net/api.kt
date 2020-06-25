@@ -28,6 +28,7 @@ class TrackApi {
         val template: Boolean,
         val published: Boolean,
         val snapshotUrl: String,
+        val coverUrl: String = "",
         val collaborators: List<User>,
         val genreKey: String,
         val genreName: String,
@@ -48,7 +49,9 @@ class TrackApi {
 
     companion object {
         fun fetch(key: String): Response {
-            return Json.parse(Response.serializer(), URL("https://api.audiotool.com/track/$key.json").readText())
+            val string = URL("https://api.audiotool.com/track/$key.json").readText()
+            println(string)
+            return Json.parse(Response.serializer(), string)
         }
     }
 }

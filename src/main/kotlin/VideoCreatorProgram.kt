@@ -2,9 +2,13 @@ import audio.*
 import draw.*
 import draw.FpsMeter.Companion.draw
 import draw.Hud.Circle.Companion.draw
+import net.TrackApi
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import org.openrndr.draw.*
+import org.openrndr.draw.colorBuffer
+import org.openrndr.draw.isolatedWithTarget
+import org.openrndr.draw.loadImage
+import org.openrndr.draw.renderTarget
 import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.extra.fx.color.ChromaticAberration
 import org.openrndr.ffmpeg.ScreenRecorder
@@ -39,11 +43,12 @@ fun main() {
             title = "Video Preview"
         }
         program {
-            val wavPath = "data/music/t7v13b2wyz83.wav"
+            val trackKey = "volution"
+
+            val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/$trackKey.wav"
             val wavFile = File(wavPath)
             val wavFormat = WavFormat.decode(wavFile.readBytes())
-            val bpm = 100.0
-
+            val track = TrackApi.fetch(trackKey).track
 
             val fpsMeter = FpsMeter()
             val font = org.openrndr.draw.loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
@@ -126,7 +131,7 @@ fun main() {
             }
             extend {
                 val playBackSeconds = if (videoCaptureMode) seconds else audioPlayback.seconds()
-                val bars = secondsToBars(playBackSeconds, bpm)
+                val bars = secondsToBars(playBackSeconds, track.bpm)
                 transform.advance(playBackSeconds)
                 shaderToy.render(window.size * window.scale, playBackSeconds) { shader ->
                     val value = normDb(transform.peakDb())
@@ -149,7 +154,7 @@ fun main() {
                 val timedInterval = max(ceil(1.0 - mod(bars, 8.0)), 0.0)
                 chromaticAberration.aberrationFactor =
                     (1.0 + cos(bars * PI * 2.0)) +
-                    cos(bars * PI * 0.5).pow(32.0) * 8.0 * timedInterval
+                            cos(bars * PI * 0.5).pow(32.0) * 8.0 * timedInterval
                 chromaticAberration.apply(blurred, blurred)
                 drawer.image(blurred)
 
@@ -162,8 +167,8 @@ fun main() {
 
                 drawer.fontMap = font
                 drawer.fill = ColorRGBa.WHITE
-                drawer.text("Kepz", 8.0, 16.0)
-                drawer.text("minima 01", 8.0, 32.0)
+                drawer.text(track.user.name, 8.0, 16.0)
+                drawer.text(track.name, 8.0, 32.0)
 
                 val fadeOutTime = 5.0
                 val total = wavFormat.seconds()

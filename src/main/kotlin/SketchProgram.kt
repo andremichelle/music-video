@@ -10,7 +10,9 @@ fun main() {
             height = 720
         }
         program {
-            println("bpm: ${TrackApi.fetch("6517jp6j9").track.bpm}")
+            //t7v13b2wyz83 (has cover)
+            //6517jp6j9 (no cover)
+            println("cover: ${TrackApi.fetch("6517jp6j9").track.coverUrl}")
         }
     }
 }

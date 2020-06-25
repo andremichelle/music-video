@@ -16,7 +16,7 @@ class FpsMeter {
             fpsMeter.update(seconds)
             fontMap = fpsMeter.font
             fill = ColorRGBa.WHITE
-            text("fps: ${fpsMeter.current}", 16.0, 16.0)
+            text("fps: ${fpsMeter.current}", 16.0, height - 16.0)
         }
     }
 
