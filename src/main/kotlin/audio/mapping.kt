@@ -1,6 +1,7 @@
 package audio
 
 import org.openrndr.math.clamp
+import kotlin.math.abs
 import kotlin.math.ln
 
 fun secondsToNumFrames(seconds: Double, samplingRate: Int): Double {
@@ -19,4 +20,13 @@ fun gainToDb(gain: Float): Double {
 
 fun normDb(minDb: Double = -72.0, maxDb: Double = 0.0): (Double) -> Double {
     return { db -> clamp((db - minDb) / (maxDb - minDb), 0.0, 1.0) }
+}
+
+fun formatDuration(seconds: Int): String {
+    return String.format(
+        "%d:%02d:%02d",
+        abs(seconds) / 3600,
+        abs(seconds) % 3600 / 60,
+        abs(seconds) % 60
+    )
 }

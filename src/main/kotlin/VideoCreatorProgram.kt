@@ -32,7 +32,7 @@ import kotlin.random.Random
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val trackKey = "gmo6wo8484"
+    val trackKey = "ztdqgahfsdhdzwroap5c2zvkosfzyem"
     val audioPlaybackMode = false
     val videoCaptureMode = false
 
@@ -96,12 +96,8 @@ fun main() {
                 .move(424, 464)
                 .reflect()
 
-            println("frame w: ${frame.width}, h: ${frame.height}")
-            println("spec w: ${s0.width()}, h: ${s0.height()}")
-
             val random = Random(0x306709)
             val rgBa = ColorRGBa.fromHex(0xFFFFFF)
-
             val circles: List<Hud.Circle> = listOf(
                 Hud.Circle(random, 5, 0.0, 24.0).move(384, 408),
                 Hud.Circle(random, 6, 4.0, 24.0).move(384, 472),
@@ -109,7 +105,6 @@ fun main() {
                 Hud.Circle(random, 5, 4.0, 16.0).move(640, 440),
                 Hud.Circle(random, 6, 4.0, 24.0).move(640, 488)
             )
-
             val rt = renderTarget(width, height) {
                 colorBuffer(ColorFormat.RGBa, ColorType.FLOAT32)
                 depthBuffer()
@@ -117,13 +112,13 @@ fun main() {
             val blurred = colorBuffer(width, height)
             val bloom = GaussianBloom()
             bloom.window = 25
-            bloom.sigma = 1.0
-            bloom.gain = 2.0
+            bloom.sigma = 0.5
+            bloom.gain = 1.0
             val chromaticAberration = ChromaticAberration()
 
             val normDb = normDb()
 
-            val shaderToy = ShaderToy.fromFile("data/shader/whack.fs")
+            val shaderToy = ShaderToy.fromFile("data/shader/clouds.fs")
 
             if (!videoCaptureMode) {
                 audioPlayback.play()
@@ -139,11 +134,6 @@ fun main() {
 //                    shader.uniform("iZoom", 1.2)
 //                    shader.uniform("iRadius", 128.0)
                 }
-
-                val yDark = 320.0
-                drawer.stroke = null
-                drawer.fill = ColorRGBa(0.0, 0.0, 0.0, 0.6)
-                drawer.rectangle(Rectangle(0.0, yDark, width.toDouble(), height.toDouble() - yDark))
 
                 drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)
                 drawer.isolatedWithTarget(rt) {
@@ -161,19 +151,19 @@ fun main() {
 
                     drawer.fontMap = fontTrack
                     drawer.fill = ColorRGBa.WHITE
-                    drawer.text(track.user.name, 40.0, 340.0)
+                    drawer.text(track.collaborators.map { it.name }.joinToString(), 40.0, 340.0)
                     drawer.text(track.name, 40.0, 340.0 + 16.0)
 
                     drawer.fontMap = fontData
                     drawer.fill = ColorRGBa.WHITE
-                    val r = Random(floor(bars * 8.0).toInt())
+                    val r = Random(floor(bars * 16.0).toInt())
                     for (y in 0..7) {
-                        for (x in 0..3) {
+                        for (x in 0..1) {
                             drawer.text(
                                 r.nextLong(0, 0xFFFFFFFF + 1)
                                     .toString(16)
                                     .toUpperCase()
-                                    .padStart(8, '0'), 684.0 + x * 60, 388.0 + y * 16
+                                    .padStart(8, '0'), 686.0 + x * 60, 388.0 + y * 16
                             )
                         }
                     }
@@ -192,6 +182,15 @@ fun main() {
                 val htR = normDb(transform.peakDb(1)) * 125.0
                 drawer.rectangle(578.0, 503.0 - htL, 5.0, htL)
                 drawer.rectangle(594.0, 503.0 - htR, 5.0, htR)
+
+                drawer.fontMap = fontData
+                drawer.text(frameCount.toString().padStart(7, '0'), 860.0, 424.0)
+                drawer.text(formatDuration(seconds.toInt()), 860.0, 436.0)
+                drawer.text(
+                    (floor(bars) + 1).toInt().toString().padStart(3, '0') + "." + ((floor(bars * 4.0) % 4).toInt() + 1).toString(),
+                    860.0,
+                    448.0
+                )
 
                 val fadeInTime = 1.0
                 val fadeOutTime = 5.0
