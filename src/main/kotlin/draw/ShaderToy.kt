@@ -7,12 +7,28 @@ import org.openrndr.math.Vector3
 import java.io.File
 
 class ShaderToy(fsCode: String) {
-    private val shader: Shader
-
     companion object {
         fun fromFile(pathname: String): ShaderToy {
             val file = File(pathname)
             return ShaderToy(file.readText(Charsets.UTF_8))
+        }
+
+        fun exampleCode(): ShaderToy {
+            return ShaderToy(
+                """
+                void mainImage( out vec4 fragColor, in vec2 fragCoord )
+                {
+                    // Normalized pixel coordinates (from 0 to 1)
+                    vec2 uv = fragCoord/iResolution.xy;
+                
+                    // Time varying pixel color
+                    vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+                
+                    // Output to screen
+                    fragColor = vec4(col,1.0);
+                }
+                """
+            )
         }
 
         private val vertexBuffer: VertexBuffer = init()
@@ -56,6 +72,8 @@ class ShaderToy(fsCode: String) {
             return geometry
         }
     }
+
+    private val shader: Shader
 
     init {
         shader = Shader.createFromCode(vsCode, pre_fsCode + fsCode + after_fsCode, name = "shadertoy")

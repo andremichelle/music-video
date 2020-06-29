@@ -1,5 +1,6 @@
-import net.TrackApi
 import org.openrndr.application
+import org.openrndr.color.ColorRGBa
+import kotlin.random.Random
 
 // https://github.com/openrndr/orx
 
@@ -10,9 +11,22 @@ fun main() {
             height = 720
         }
         program {
-            //t7v13b2wyz83 (has cover)
-            //6517jp6j9 (no cover)
-            println("cover: ${TrackApi.fetch("6517jp6j9").track.coverUrl}")
+            val font = org.openrndr.draw.loadFont("data/fonts/Andale Mono.ttf", 12.0)
+            extend {
+                drawer.clear(ColorRGBa.TRANSPARENT)
+                drawer.fontMap = font
+
+                val random = Random(frameCount)
+
+                for (y in 0..15) {
+                    for (x in 0..4) {
+                        drawer.text(
+                            random.nextLong(0, 0xFFFFFFFF + 1)
+                                .toString(16).padStart(8, '0'), 32.0 + x * 96, 32.0 + y * 16
+                        )
+                    }
+                }
+            }
         }
     }
 }

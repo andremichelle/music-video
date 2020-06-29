@@ -10,7 +10,6 @@ import org.openrndr.extensions.Screenshots
 import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.extra.fx.color.ChromaticAberration
 import org.openrndr.ffmpeg.ScreenRecorder
-import org.openrndr.math.Vector2
 import org.openrndr.math.clamp
 import org.openrndr.math.mod
 import org.openrndr.shape.Rectangle
@@ -25,10 +24,11 @@ import kotlin.random.Random
 // Check out the layer feature https://guide.openrndr.org/#/10_OPENRNDR_Extras/C11_Poisson_fills
 
 // Todo
-// How to draw a spectrum with one shader call (send height as uniform?)
+// How to draw a spectrum with one shader call https://www.shadertoy.com/view/WtlyDj
 // Allow to place shadertoy arbitrary on stage
 // Nerdy timecodes
-// Hud should be white
+// random text scroller
+// flying hexagons
 
 @Suppress("ConstantConditionIf")
 fun main() {
@@ -54,11 +54,10 @@ fun main() {
             val track = TrackApi.fetch(trackKey).track
 
             val fpsMeter = FpsMeter()
-            val font = org.openrndr.draw.loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
+            val fontTrack = org.openrndr.draw.loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
+            val fontData = org.openrndr.draw.loadFont("data/fonts/Andale Mono.ttf", 12.0)
+            val frame = loadImage("data/images/hud-frame.png")
             val atl = loadImage("data/images/audiotool.png")
-            val sBg = loadImage("data/images/hud-frame-spectrum.png")
-            val wBg = loadImage("data/images/hud-frame-waveform.png")
-            val cBg = loadImage("data/images/hud-frame-cover.png")
             val cov = loadImage(track.cover())
 
             if (videoCaptureMode) {
@@ -85,34 +84,34 @@ fun main() {
             val transform = AudioTransform(wavFormat)
 
             // Spectra
-            val s0 = createSpectrum(sBg)
-            val s1 = createSpectrum(sBg)
-            val cx = width / 2 - 170
-            val cy = height - 320 + 128
-            s0.move(cx, cy).reflect()
-            s1.move(cx + 208, cy)
+            val s0 = createSpectrum()
+            val s1 = createSpectrum()
+            s0.move(216, 376).reflect()
+            s1.move(424, 376)
 
             // Waveforms
-            val w0: Waveform = createWaveform(wBg)
-                .move(s0.x - 3, cy + 104)
-            val w1: Waveform = createWaveform(wBg)
-                .move(s1.x - 3, cy + 104)
+            val w0: Waveform = createWaveform()
+                .move(216, 464)
+            val w1: Waveform = createWaveform()
+                .move(424, 464)
                 .reflect()
+
+            println("frame w: ${frame.width}, h: ${frame.height}")
+            println("spec w: ${s0.width()}, h: ${s0.height()}")
 
             val random = Random(0x306709)
             val rgBa = ColorRGBa.fromHex(0xFFFFFF)
 
             val circles: List<Hud.Circle> = listOf(
-                Hud.Circle(random, 5, 4.0, 24.0)
-                    .move(cx + 169, cy + 14),
-                Hud.Circle(random, 5, 4.0, 24.0)
-                    .move(cx + 169, cy + 70),
-                Hud.Circle(random, 5, 4.0, 24.0)
-                    .move(cx + 169, cy + 126)
+                Hud.Circle(random, 5, 0.0, 24.0).move(384, 408),
+                Hud.Circle(random, 6, 4.0, 24.0).move(384, 472),
+                Hud.Circle(random, 6, 4.0, 24.0).move(640, 392),
+                Hud.Circle(random, 5, 4.0, 16.0).move(640, 440),
+                Hud.Circle(random, 6, 4.0, 24.0).move(640, 488)
             )
 
             val rt = renderTarget(width, height) {
-                colorBuffer()
+                colorBuffer(ColorFormat.RGBa, ColorType.FLOAT32)
                 depthBuffer()
             }
             val blurred = colorBuffer(width, height)
@@ -141,7 +140,7 @@ fun main() {
 //                    shader.uniform("iRadius", 128.0)
                 }
 
-                val yDark = 280.0
+                val yDark = 320.0
                 drawer.stroke = null
                 drawer.fill = ColorRGBa(0.0, 0.0, 0.0, 0.6)
                 drawer.rectangle(Rectangle(0.0, yDark, width.toDouble(), height.toDouble() - yDark))
@@ -150,6 +149,7 @@ fun main() {
                 drawer.isolatedWithTarget(rt) {
                     drawer.stroke = null
                     drawer.clear(ColorRGBa.TRANSPARENT)
+                    drawer.image(frame, 0.0, 0.0, width.toDouble(), height.toDouble())
                     s0.draw(drawer, rgBa, transform, 0)
                     s1.draw(drawer, rgBa, transform, 1)
 
@@ -157,30 +157,41 @@ fun main() {
                     w0.render(drawer, transform.channel(0))
                     w1.render(drawer, transform.channel(1))
 
-                    drawer.image(cBg, s0.x - 192.0, s0.y - 10.0)
-
                     drawer.draw(circles, rgBa, bars * 2.0)
 
-                    drawer.fontMap = font
+                    drawer.fontMap = fontTrack
                     drawer.fill = ColorRGBa.WHITE
-                    drawer.text(track.user.name, 132.0, 310.0)
-                    drawer.text(track.name, 132.0, 310.0 + 16.0)
+                    drawer.text(track.user.name, 40.0, 340.0)
+                    drawer.text(track.name, 40.0, 340.0 + 16.0)
+
+                    drawer.fontMap = fontData
+                    drawer.fill = ColorRGBa.WHITE
+                    val r = Random(floor(bars * 8.0).toInt())
+                    for (y in 0..7) {
+                        for (x in 0..3) {
+                            drawer.text(
+                                r.nextLong(0, 0xFFFFFFFF + 1)
+                                    .toString(16)
+                                    .toUpperCase()
+                                    .padStart(8, '0'), 684.0 + x * 60, 388.0 + y * 16
+                            )
+                        }
+                    }
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
                 val timedInterval = max(ceil(1.0 - mod(bars, 8.0)), 0.0)
                 chromaticAberration.aberrationFactor =
-                    (1.0 + cos(bars * PI * 2.0)) +
-                            cos(bars * PI * 0.5).pow(32.0) * 8.0 * timedInterval
+                    0.5 + cos(bars * PI * 0.5).pow(64.0) * 8.0 * timedInterval
                 chromaticAberration.apply(blurred, blurred)
                 drawer.image(blurred)
-                drawer.image(cov, s0.x - 192.0 + 14.0, s0.y - 10.0 + 14.0, 128.0, 128.0)
+                drawer.image(cov, 40.0, 376.0, 128.0, 128.0)
 
                 drawer.fill = rgBa.opacify(0.3)
                 drawer.stroke = null
-                val widthL = normDb(transform.peakDb(0)) * 172.0
-                val widthR = normDb(transform.peakDb(1)) * 172.0
-                drawer.rectangle(width / 2.0 + 4, height - 32.0, widthR, 8.0)
-                drawer.rectangle(width / 2.0 - widthL - 4, height - 32.0, widthL, 8.0)
+                val htL = normDb(transform.peakDb(0)) * 125.0
+                val htR = normDb(transform.peakDb(1)) * 125.0
+                drawer.rectangle(578.0, 503.0 - htL, 5.0, htL)
+                drawer.rectangle(594.0, 503.0 - htR, 5.0, htR)
 
                 val fadeInTime = 1.0
                 val fadeOutTime = 5.0
@@ -205,8 +216,6 @@ fun main() {
     }
 }
 
-private fun createWaveform(wBg: ColorBuffer) = Waveform(135.0, 36.0)
-    .background(wBg, Vector2(-9.0, -10.0), 1.0)
+private fun createWaveform() = Waveform(128.0, 40.0)
 
-private fun createSpectrum(sBg: ColorBuffer) = Spectrum(26, 21, 4, 2, 1)
-    .background(sBg, Vector2(-8.0, -18.0), 1.0)
+private fun createSpectrum() = Spectrum(26, 21, 4, 2, 1)
