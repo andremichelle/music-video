@@ -10,22 +10,21 @@ fun main() {
             title = "Shadertoy"
         }
         program {
-            val renderVideo = false
+            val renderVideo = true
             @Suppress("ConstantConditionIf")
             if (renderVideo) {
                 extend(ScreenRecorder()) {
-                    outputFile = "tmp/moog.mp4"
+                    outputFile = "tmp/booting.mp4"
                     quitAfterMaximum = true
-                    maximumDuration = 8.0
+                    maximumDuration = 16.0
                     frameRate = 60
                     contentScale = 2.0
                 }
             }
 
-            val shaderToy = ShaderToy.fromFile("data/shader/moog.fs")
+            val shaderToy = ShaderToy.fromFile("data/shader/booting.fs") {}
             extend {
-                shaderToy.render(window.size * window.scale, seconds * 0.125, uniforms = { shader ->
-                })
+                shaderToy.render(window.size * window.scale, seconds, 120.0)
             }
         }
     }

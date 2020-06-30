@@ -40,6 +40,12 @@ class TrackApi {
         fun cover(): URL {
             return URL("https:$coverUrl")
         }
+
+        fun authors(): String {
+            val regex = Regex("[^A-Za-z0-9 ]")
+            val string = collaborators.joinToString { it.name }
+            return regex.replace(string, "").trim()
+        }
     }
 
     @Serializable

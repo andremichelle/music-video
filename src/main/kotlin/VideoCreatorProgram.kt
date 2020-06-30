@@ -1,7 +1,10 @@
 import audio.*
-import draw.*
+import draw.FpsMeter
 import draw.FpsMeter.Companion.draw
+import draw.Hud
 import draw.Hud.Circle.Companion.draw
+import draw.Spectrum
+import draw.Waveform
 import net.TrackApi
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
@@ -10,6 +13,7 @@ import org.openrndr.extensions.Screenshots
 import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.extra.fx.color.ChromaticAberration
 import org.openrndr.ffmpeg.ScreenRecorder
+import org.openrndr.math.Matrix55
 import org.openrndr.math.clamp
 import org.openrndr.math.mod
 import org.openrndr.shape.Rectangle
@@ -26,15 +30,12 @@ import kotlin.random.Random
 // Todo
 // How to draw a spectrum with one shader call https://www.shadertoy.com/view/WtlyDj
 // Allow to place shadertoy arbitrary on stage
-// Nerdy timecodes
-// random text scroller
 // flying hexagons
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val trackKey = "ztdqgahfsdhdzwroap5c2zvkosfzyem"
     val audioPlaybackMode = false
-    val videoCaptureMode = false
+    val videoCaptureMode = true
 
     application {
         configure {
@@ -43,31 +44,44 @@ fun main() {
             title = "Video Preview"
         }
         program {
+            val scene: Scene = Scene.list[2]
+
             extend(Screenshots()) {
                 folder = "tmp/"
                 scale = 2.0
             }
 
-            val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/$trackKey.wav"
+            val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/${scene.trackKey}.wav"
             val wavFile = File(wavPath)
             val wavFormat = WavFormat.decode(wavFile.readBytes())
-            val track = TrackApi.fetch(trackKey).track
+            val track = TrackApi.fetch(scene.trackKey).track
 
             val fpsMeter = FpsMeter()
-            val fontTrack = org.openrndr.draw.loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
-            val fontData = org.openrndr.draw.loadFont("data/fonts/Andale Mono.ttf", 12.0)
+            val fontTrack = loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
+            val fontHex = loadFont("data/fonts/Andale Mono.ttf", 7.0)
+            val fontTimeCode = loadFont("data/fonts/Andale Mono.ttf", 11.0)
             val frame = loadImage("data/images/hud-frame.png")
+            val txt = loadImage("data/images/txt.png")
             val atl = loadImage("data/images/audiotool.png")
+            val hero = loadImage("data/images/hero.png")
             val cov = loadImage(track.cover())
+
+            val heroColorMatrix = Matrix55(
+                1.0, 0.0, 0.0, 0.0, 0.0,
+                0.0, 1.0, 0.0, 0.0, 0.0,
+                0.0, 0.0, 1.0, 0.0, 0.0,
+                0.0, 0.0, 0.0, 0.5, 0.0,
+                0.0, 0.0, 0.0, 0.0, 1.0
+            )
 
             if (videoCaptureMode) {
                 // call this in terminal to mux audio into video
                 println(
-                    "ffmpeg -i ${Paths.get("tmp/$trackKey.mp4").toAbsolutePath()} -i ${wavFile.toPath()
-                        .toAbsolutePath()} -c copy tmp/$trackKey.mkv"
+                    "ffmpeg -i ${Paths.get("tmp/${scene.trackKey}.mp4").toAbsolutePath()} -i ${wavFile.toPath()
+                        .toAbsolutePath()} -c copy tmp/${scene.trackKey}.mkv"
                 )
                 extend(ScreenRecorder()) {
-                    outputFile = "tmp/$trackKey.mp4"
+                    outputFile = "tmp/${scene.trackKey}.mp4"
                     quitAfterMaximum = true
                     maximumDuration = wavFormat.seconds()
                     frameRate = 60
@@ -81,7 +95,7 @@ fun main() {
                 } else {
                     AudioPlaybackNone(this)
                 }
-            val transform = AudioTransform(wavFormat)
+            val transform = AudioTransform(wavFormat, 1024)
 
             // Spectra
             val s0 = createSpectrum()
@@ -96,14 +110,15 @@ fun main() {
                 .move(424, 464)
                 .reflect()
 
-            val random = Random(0x306709)
+            val random = Random(scene.seed)
             val rgBa = ColorRGBa.fromHex(0xFFFFFF)
             val circles: List<Hud.Circle> = listOf(
                 Hud.Circle(random, 5, 0.0, 24.0).move(384, 408),
                 Hud.Circle(random, 6, 4.0, 24.0).move(384, 472),
                 Hud.Circle(random, 6, 4.0, 24.0).move(640, 392),
                 Hud.Circle(random, 5, 4.0, 16.0).move(640, 440),
-                Hud.Circle(random, 6, 4.0, 24.0).move(640, 488)
+                Hud.Circle(random, 6, 4.0, 24.0).move(640, 488),
+                Hud.Circle(random, 6, 20.0, 40.0).move(884, 468)
             )
             val rt = renderTarget(width, height) {
                 colorBuffer(ColorFormat.RGBa, ColorType.FLOAT32)
@@ -118,8 +133,6 @@ fun main() {
 
             val normDb = normDb()
 
-            val shaderToy = ShaderToy.fromFile("data/shader/clouds.fs")
-
             if (!videoCaptureMode) {
                 audioPlayback.play()
             }
@@ -128,12 +141,7 @@ fun main() {
                 val playBackSeconds = if (videoCaptureMode) seconds else audioPlayback.seconds()
                 val bars = secondsToBars(playBackSeconds, track.bpm)
                 transform.advance(playBackSeconds)
-                shaderToy.render(window.size * window.scale, playBackSeconds * 0.5) { shader ->
-                    val value = normDb(transform.peakDb())
-//                    shader.uniform("iPeak", 0.125 + value.pow(16.0) * 0.25)
-//                    shader.uniform("iZoom", 1.2)
-//                    shader.uniform("iRadius", 128.0)
-                }
+                scene.shadertoy.render(window.size * window.scale, playBackSeconds, track.bpm)
 
                 drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)
                 drawer.isolatedWithTarget(rt) {
@@ -142,56 +150,65 @@ fun main() {
                     drawer.image(frame, 0.0, 0.0, width.toDouble(), height.toDouble())
                     s0.draw(drawer, rgBa, transform, 0)
                     s1.draw(drawer, rgBa, transform, 1)
-
                     drawer.fill = rgBa
                     w0.render(drawer, transform.channel(0))
                     w1.render(drawer, transform.channel(1))
-
                     drawer.draw(circles, rgBa, bars * 2.0)
-
                     drawer.fontMap = fontTrack
                     drawer.fill = ColorRGBa.WHITE
-                    drawer.text(track.collaborators.map { it.name }.joinToString(), 40.0, 340.0)
-                    drawer.text(track.name, 40.0, 340.0 + 16.0)
-
-                    drawer.fontMap = fontData
+                    drawer.text(track.authors(), 40.0, 332.0)
+                    drawer.text(track.name, 40.0, 332.0 + 16.0)
+                    drawer.fontMap = fontHex
                     drawer.fill = ColorRGBa.WHITE
                     val r = Random(floor(bars * 16.0).toInt())
-                    for (y in 0..7) {
-                        for (x in 0..1) {
+                    for (y in 0..12) {
+                        for (x in 0..2) {
                             drawer.text(
-                                r.nextLong(0, 0xFFFFFFFF + 1)
+                                r.nextInt(0, 0x10000)
                                     .toString(16)
                                     .toUpperCase()
-                                    .padStart(8, '0'), 686.0 + x * 60, 388.0 + y * 16
+                                    .padStart(4, '0'), 680.0 + x * 20, 382.0 + y * 10
                             )
                         }
                     }
+                    drawer.fontMap = fontTimeCode
+                    drawer.text(frameCount.toString().padStart(7, '0'), 879.0, 384.0)
+                    drawer.text(formatDuration(seconds.toInt()), 879.0, 384.0 + 12.0)
+                    drawer.text(
+                        (floor(bars) + 1).toInt().toString()
+                            .padStart(3, '0')
+                            .padStart(5, ' ') + "." + ((floor(bars * 4.0) % 4).toInt() + 1).toString(),
+                        879.0,
+                        384.0 + 24.0
+                    )
+                    val time = bars * 0.125
+                    val value = (Hud.getTimeMapper(time.toInt()))(time)
+                    drawer.drawStyle.clip = Rectangle(758.0, 376.0, 56.0, 128.0)
+                    drawer.image(txt, 758.0, 376.0 - 384.0 * (value - floor(value)), 56.0, 512.0)
+                    drawer.drawStyle.clip = null
+                    drawer.drawStyle.colorMatrix = heroColorMatrix
+                    drawer.image(
+                        hero,
+                        Rectangle(32.0 * (floor(bars * 4.0 * 7.0) % 7), 0.0, 32.0, 32.0),
+                        Rectangle(886.0 - 16.0, 468.0 - 16.0, 32.0, 32.0)
+                    )
                 }
                 bloom.apply(rt.colorBuffer(0), blurred)
                 val timedInterval = max(ceil(1.0 - mod(bars, 8.0)), 0.0)
                 chromaticAberration.aberrationFactor =
                     0.5 + cos(bars * PI * 0.5).pow(64.0) * 8.0 * timedInterval
                 chromaticAberration.apply(blurred, blurred)
+                drawer.stroke = null
+                drawer.fill = ColorRGBa(0.0, 0.0, 0.0, scene.backgroundAlpha)
+                drawer.rectangle(24.0, 360.0, 912.0, 160.0)
                 drawer.image(blurred)
                 drawer.image(cov, 40.0, 376.0, 128.0, 128.0)
-
-                drawer.fill = rgBa.opacify(0.3)
+                drawer.fill = rgBa.opacify(0.4)
                 drawer.stroke = null
                 val htL = normDb(transform.peakDb(0)) * 125.0
                 val htR = normDb(transform.peakDb(1)) * 125.0
                 drawer.rectangle(578.0, 503.0 - htL, 5.0, htL)
                 drawer.rectangle(594.0, 503.0 - htR, 5.0, htR)
-
-                drawer.fontMap = fontData
-                drawer.text(frameCount.toString().padStart(7, '0'), 860.0, 424.0)
-                drawer.text(formatDuration(seconds.toInt()), 860.0, 436.0)
-                drawer.text(
-                    (floor(bars) + 1).toInt().toString().padStart(3, '0') + "." + ((floor(bars * 4.0) % 4).toInt() + 1).toString(),
-                    860.0,
-                    448.0
-                )
-
                 val fadeInTime = 1.0
                 val fadeOutTime = 5.0
                 val total = wavFormat.seconds()
@@ -204,11 +221,12 @@ fun main() {
                     0.0,
                     1.0
                 )
-                drawer.fill = ColorRGBa(0.0, 0.0, 0.0, alphaInv)
-                drawer.rectangle(Rectangle(0.0, 0.0, width.toDouble(), height.toDouble()))
-
-                if (!videoCaptureMode) {
-                    drawer.draw(fpsMeter, seconds)
+                if (0.0 < alphaInv) {
+                    drawer.fill = ColorRGBa(0.0, 0.0, 0.0, alphaInv)
+                    drawer.rectangle(Rectangle(0.0, 0.0, width.toDouble(), height.toDouble()))
+                    if (!videoCaptureMode) {
+                        drawer.draw(fpsMeter, seconds)
+                    }
                 }
             }
         }

@@ -15,6 +15,30 @@ import kotlin.math.*
 import kotlin.random.Random
 
 class Hud {
+    companion object {
+        fun getTimeMapper(index: Int): (Double) -> Double {
+            return Mappings[index % Mappings.size];
+        }
+
+        private val Mappings: List<(Double) -> Double> = listOf(
+            { x -> x - floor(x) }, // linear
+            accelerateAndStop(4.0),
+            accelerateAndStop(2.0),
+            { x -> abs(sin(x * PI)) },
+            { x -> 1.0 - min(1.0, 2.0 * (2.0 * x - floor(2.0 * x))) },
+            stopAndGo(4),
+            stopAndGo(8),
+            stopAndGo(16)
+        )
+
+        private fun accelerateAndStop(exp2: Double) = { x: Double -> ((x - floor(x))).pow(exp2) }
+
+        private fun stopAndGo(l: Int): (Double) -> Double {
+            val w = { x: Double -> max(2.0 * x - 1.0, 0.0) }
+            return { x -> (w.invoke(mod(x * l, 1.0)) + floor(x * l)) / l }
+        }
+    }
+
     open class Element {
         class Background(val colorBuffer: ColorBuffer, val tl: Vector2, val scale: Double)
 
@@ -66,29 +90,11 @@ class Hud {
                 for (section in circle.sections) {
                     this.fill = rgBa.opacify(section.opacity)
                     section.draw(
-                        this, mappings[++index % mappings.size]
-                            .invoke(if ((index and 1) == 1) subTime else 1.0 - subTime) * 360.0
+                        this, getTimeMapper(++index)
+                            (if ((index and 1) == 1) subTime else 1.0 - subTime) * 360.0
                     )
                 }
                 circle.end(this)
-            }
-
-            private val mappings: List<(Double) -> Double> = listOf(
-                { x -> x - floor(x) }, // linear
-                accelerateAndStop(4.0),
-                accelerateAndStop(2.0),
-                { x -> abs(sin(x * PI)) },
-                { x -> 1.0 - min(1.0, 2.0 * (2.0 * x - floor(2.0 * x))) },
-                stopAndGo(4),
-                stopAndGo(8),
-                stopAndGo(16)
-            )
-
-            private fun accelerateAndStop(exp2: Double) = { x: Double -> ((x - floor(x))).pow(exp2) }
-
-            private fun stopAndGo(l: Int): (Double) -> Double {
-                val w = { x: Double -> max(2.0 * x - 1.0, 0.0) }
-                return { x -> (w.invoke(mod(x * l, 1.0)) + floor(x * l)) / l }
             }
         }
 

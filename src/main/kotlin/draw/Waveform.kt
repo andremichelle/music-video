@@ -29,7 +29,8 @@ class Waveform(val width: Double, val height: Double) : Hud.Element() {
     fun render(drawer: Drawer, raw: FloatArray) {
         begin(drawer)
         if(reflect) {
-            raw.reverse()
+            drawer.translate(width, 0.0)
+            drawer.scale(-1.0, 1.0)
         }
         val samplesEachPixel = raw.size / width
         val scale: Double = (height - 1.0) / (bottomValue - topValue)

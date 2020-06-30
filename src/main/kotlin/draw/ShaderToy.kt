@@ -7,12 +7,17 @@ import org.openrndr.math.Vector3
 import java.io.File
 
 class ShaderToy(fsCode: String) {
+    var uniforms: (Shader) -> Unit = { Unit }
+    var timing: (Double, Double) -> Double = { seconds, bpm -> seconds }
+
     companion object {
-        fun fromFile(pathname: String): ShaderToy {
-            val file = File(pathname)
-            return ShaderToy(file.readText(Charsets.UTF_8))
+        fun fromFile(pathname: String, configure: ShaderToy.() -> Unit): ShaderToy {
+            val shaderToy = ShaderToy(File(pathname).readText(Charsets.UTF_8))
+            shaderToy.configure()
+            return shaderToy
         }
 
+        @Suppress("unused")
         fun exampleCode(): ShaderToy {
             return ShaderToy(
                 """
@@ -79,13 +84,9 @@ class ShaderToy(fsCode: String) {
         shader = Shader.createFromCode(vsCode, pre_fsCode + fsCode + after_fsCode, name = "shadertoy")
     }
 
-    fun render(size: Vector2, time: Double) {
-        render(size, time, uniforms = { Unit })
-    }
-
-    fun render(size: Vector2, time: Double, uniforms: (Shader) -> Unit) {
+    fun render(size: Vector2, seconds: Double, bpm: Double) {
         shader.begin()
-        shader.uniform("iTime", time.toFloat())
+        shader.uniform("iTime", timing(seconds, bpm).toFloat())
         shader.uniform("iResolution", size)
         uniforms(shader)
         Driver.instance.drawVertexBuffer(

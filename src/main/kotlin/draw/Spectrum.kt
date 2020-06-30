@@ -37,7 +37,8 @@ class Spectrum(
         begin(drawer)
         transform.mapSpectrum(values, channelIndex)
         if (reflect) {
-            values.reverse()
+            drawer.translate(width().toDouble(), 0.0)
+            drawer.scale(-1.0, 1.0)
         }
         val cValue = rgBa.opacify(0.40)
         val smoothingCoeff = exp(-1.0 / (transform.fps * 0.3)).toFloat() // 300ms release-time
