@@ -38,7 +38,7 @@ class TrackApi {
         val license: Int
     ) {
         fun cover(): URL {
-            return URL("https:$coverUrl")
+            return if (coverUrl == "") URL("https://www.audiotool.com/images/no-avatar-512.gif") else URL("https:$coverUrl")
         }
 
         fun authors(): String {
@@ -59,7 +59,30 @@ class TrackApi {
 
     companion object {
         fun fetch(key: String): Response {
-            return Json.parse(Response.serializer(), URL("https://api.audiotool.com/track/$key.json").readText())
+            return try {
+                Json.parse(Response.serializer(), URL("https://api.audiotool.com/track/$key.json").readText())
+            } catch (throwable: Throwable) {
+                Response(
+                    Track(
+                        key,
+                        "N/A",
+                        -1,
+                        0,
+                        0,
+                        120.0,
+                        User("foo", "foo", ""),
+                        template = false,
+                        published = false,
+                        snapshotUrl = "",
+                        coverUrl = "",
+                        collaborators = emptyList(),
+                        genreKey = "",
+                        genreName = "",
+                        duration = 235.0,
+                        isNextTrack = false, joinPolicy = 0, license = 0
+                    ), 0, 0, true
+                )
+            }
         }
     }
 }

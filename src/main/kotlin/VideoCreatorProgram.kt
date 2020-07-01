@@ -34,8 +34,8 @@ import kotlin.random.Random
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val audioPlaybackMode = false
-    val videoCaptureMode = true
+    val audioPlaybackMode = true
+    val videoCaptureMode = false
 
     application {
         configure {
@@ -44,14 +44,15 @@ fun main() {
             title = "Video Preview"
         }
         program {
-            val scene: Scene = Scene.list[2]
+            val scene: Scene = Scene.list[0]
 
             extend(Screenshots()) {
                 folder = "tmp/"
                 scale = 2.0
             }
 
-            val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/${scene.trackKey}.wav"
+//            val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/${scene.trackKey}.wav"
+            val wavPath = "data/music/${scene.trackKey}.wav"
             val wavFile = File(wavPath)
             val wavFormat = WavFormat.decode(wavFile.readBytes())
             val track = TrackApi.fetch(scene.trackKey).track
@@ -65,6 +66,7 @@ fun main() {
             val atl = loadImage("data/images/audiotool.png")
             val hero = loadImage("data/images/hero.png")
             val cov = loadImage(track.cover())
+            val ribbon = loadImage("data/images/ribbon-contest-ho-2020.png")
 
             val heroColorMatrix = Matrix55(
                 1.0, 0.0, 0.0, 0.0, 0.0,
@@ -130,19 +132,20 @@ fun main() {
             bloom.sigma = 0.5
             bloom.gain = 1.0
             val chromaticAberration = ChromaticAberration()
-
             val normDb = normDb()
-
+            val tempoEvaluator = TempoEvaluator(TempoEvent.fetch(scene.trackKey), track.bpm)
             if (!videoCaptureMode) {
                 audioPlayback.play()
             }
             extend {
                 drawer.clear(ColorRGBa.BLACK)
                 val playBackSeconds = if (videoCaptureMode) seconds else audioPlayback.seconds()
-                val bars = secondsToBars(playBackSeconds, track.bpm)
                 transform.advance(playBackSeconds)
+                tempoEvaluator.advance(playBackSeconds)
+
                 scene.shadertoy.render(window.size * window.scale, playBackSeconds, track.bpm)
 
+                val bars = tempoEvaluator.bars()
                 drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)
                 drawer.isolatedWithTarget(rt) {
                     drawer.stroke = null
@@ -189,7 +192,7 @@ fun main() {
                     drawer.drawStyle.colorMatrix = heroColorMatrix
                     drawer.image(
                         hero,
-                        Rectangle(32.0 * (floor(bars * 4.0 * 7.0) % 7), 0.0, 32.0, 32.0),
+                        Rectangle(32.0 * (floor(bars * 4.0 * 7.0 + 5.0) % 7), 0.0, 32.0, 32.0),
                         Rectangle(886.0 - 16.0, 468.0 - 16.0, 32.0, 32.0)
                     )
                 }
@@ -203,6 +206,7 @@ fun main() {
                 drawer.rectangle(24.0, 360.0, 912.0, 160.0)
                 drawer.image(blurred)
                 drawer.image(cov, 40.0, 376.0, 128.0, 128.0)
+                drawer.image(ribbon, 0.0, 0.0, ribbon.width / 2.0, ribbon.height / 2.0)
                 drawer.fill = rgBa.opacify(0.4)
                 drawer.stroke = null
                 val htL = normDb(transform.peakDb(0)) * 125.0

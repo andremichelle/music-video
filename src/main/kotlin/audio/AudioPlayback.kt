@@ -39,6 +39,7 @@ class AudioPlaybackImpl(samplePath: String) : AudioPlayback {
         samplePlayer = SamplePlayer(context, SampleManager.sample(samplePath))
         context.out.addInput(samplePlayer)
 
+        // TODO this does not work just yet
         Runtime.getRuntime().addShutdownHook(object : Thread() {
             override fun run() {
                 println("shutdown")

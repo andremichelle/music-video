@@ -19,7 +19,7 @@ class Scene(val trackKey: String, val shadertoy: ShaderToy, val seed: Int, val b
             Scene(
                 "iwd52a2x",
                 ShaderToy.fromFile("data/shader/artifact-at-sea.fs") {
-                    timing = { seconds, bpm -> secondsToBars(seconds, bpm) / 2.0 }
+                    timing = { seconds, bpm -> secondsToBars(seconds, bpm) * 2.0 }
                 }, 0x30679, 0.2
             )
         )
