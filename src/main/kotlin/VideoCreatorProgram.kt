@@ -66,7 +66,7 @@ fun main() {
             val atl = loadImage("data/images/audiotool.png")
             val hero = loadImage("data/images/hero.png")
             val cov = loadImage(track.cover())
-            val ribbon = loadImage("data/images/ribbon-contest-ho-2020.png")
+            // val ribbon = loadImage("data/images/ribbon-contest-ho-2020.png")
 
             val heroColorMatrix = Matrix55(
                 1.0, 0.0, 0.0, 0.0, 0.0,
@@ -206,7 +206,7 @@ fun main() {
                 drawer.rectangle(24.0, 360.0, 912.0, 160.0)
                 drawer.image(blurred)
                 drawer.image(cov, 40.0, 376.0, 128.0, 128.0)
-                drawer.image(ribbon, 0.0, 0.0, ribbon.width / 2.0, ribbon.height / 2.0)
+                // drawer.image(ribbon, 0.0, 0.0, ribbon.width / 2.0, ribbon.height / 2.0)
                 drawer.fill = rgBa.opacify(0.4)
                 drawer.stroke = null
                 val htL = normDb(transform.peakDb(0)) * 125.0
