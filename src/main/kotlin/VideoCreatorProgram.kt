@@ -14,6 +14,7 @@ import org.openrndr.extra.fx.blur.GaussianBloom
 import org.openrndr.extra.fx.color.ChromaticAberration
 import org.openrndr.ffmpeg.ScreenRecorder
 import org.openrndr.math.Matrix55
+import org.openrndr.math.Vector2
 import org.openrndr.math.clamp
 import org.openrndr.math.mod
 import org.openrndr.shape.Rectangle
@@ -26,6 +27,7 @@ import kotlin.random.Random
 // https://www.shadertoy.com/view/ls3Xzf (glitch)
 // https://github.com/openrndr/openrndr/blob/master/openrndr-openal/src/main/kotlin/AudioPlayer.kt#L23 (Shutdown hook)
 // Check out the layer feature https://guide.openrndr.org/#/10_OPENRNDR_Extras/C11_Poisson_fills
+// Render hud-frame as SVG (not working out of the box, Illustrator export?)
 
 // Todo
 // How to draw a spectrum with one shader call https://www.shadertoy.com/view/WtlyDj
@@ -34,7 +36,7 @@ import kotlin.random.Random
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val audioPlaybackMode = true
+    val audioPlaybackMode = false
     val videoCaptureMode = false
 
     application {
@@ -44,15 +46,14 @@ fun main() {
             title = "Video Preview"
         }
         program {
-            val scene: Scene = Scene.list[0]
-
             extend(Screenshots()) {
                 folder = "tmp/"
                 scale = 2.0
             }
 
-//            val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/${scene.trackKey}.wav"
-            val wavPath = "data/music/${scene.trackKey}.wav"
+            val scene: Scene = Scene.list[2]
+
+            val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/${scene.trackKey}.wav"
             val wavFile = File(wavPath)
             val wavFormat = WavFormat.decode(wavFile.readBytes())
             val track = TrackApi.fetch(scene.trackKey).track
@@ -76,19 +77,21 @@ fun main() {
                 0.0, 0.0, 0.0, 0.0, 1.0
             )
 
-            if (videoCaptureMode) {
+            val contentScale = if (videoCaptureMode) {
                 // call this in terminal to mux audio into video
                 println(
                     "ffmpeg -i ${Paths.get("tmp/${scene.trackKey}.mp4").toAbsolutePath()} -i ${wavFile.toPath()
                         .toAbsolutePath()} -c copy tmp/${scene.trackKey}.mkv"
                 )
-                extend(ScreenRecorder()) {
+                Vector2(extend(ScreenRecorder()) {
                     outputFile = "tmp/${scene.trackKey}.mp4"
                     quitAfterMaximum = true
                     maximumDuration = wavFormat.seconds()
                     frameRate = 60
                     contentScale = 2.0
-                }
+                }.contentScale)
+            } else {
+                window.scale
             }
 
             val audioPlayback: AudioPlayback =
@@ -143,7 +146,7 @@ fun main() {
                 transform.advance(playBackSeconds)
                 tempoEvaluator.advance(playBackSeconds)
 
-                scene.shadertoy.render(window.size * window.scale, playBackSeconds, track.bpm)
+                scene.shadertoy.render(window.size * contentScale, playBackSeconds, track.bpm)
 
                 val bars = tempoEvaluator.bars()
                 drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)

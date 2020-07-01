@@ -39,6 +39,8 @@ class TempoEvent(
 class TempoEvaluator(private val events: List<TempoEvent>, defaultBpm: Double) {
     private val expStepper = ExpStepper()
     private val resolution = 1.0 / 16.0
+    private val numSubSteps = 16
+    private val subResolution = resolution / numSubSteps
 
     private val iterator: Iterator<TempoEvent> = events.iterator()
     private var curr: TempoEvent? = if (iterator.hasNext()) iterator.next() else null
@@ -46,6 +48,7 @@ class TempoEvaluator(private val events: List<TempoEvent>, defaultBpm: Double) {
     private var bars = 0.0
     private var time = 0.0
     private var bpm = curr?.value ?: defaultBpm
+    private var subIndex = 0
 
     fun advance(target: Double) {
         if (events.isEmpty() || null == curr) {
@@ -53,30 +56,11 @@ class TempoEvaluator(private val events: List<TempoEvent>, defaultBpm: Double) {
             time = target
         } else {
             while (time < target) {
-                val interpolation = curr!!.interpolation
-                bpm = if (interpolation == 0 || next == null) {
-                    curr!!.value
-                } else {
-                    val ay: Double = curr!!.value
-                    val by: Double = next!!.value
-                    val dy = by - ay
-                    if (0.0 == dy) {
-                        curr!!.value
-                    } else {
-                        val ax: Double = curr!!.bars()
-                        val bx: Double = next!!.bars()
-                        val dx = bx - ax
-                        val slope = curr!!.slope
-                        if (0.5 == slope) {
-                            ay + dy / dx * (bars - ax)
-                        } else {
-                            expStepper.bySlope(bx - ax, ay, slope, by)
-                            expStepper.y(bars - ax)
-                        }
-                    }
+                bars = ++subIndex * subResolution
+                time += barsToSeconds(subResolution, bpm)
+                if ((subIndex % numSubSteps) == 0) { // next resolution step
+                    bpm = evaluate(bars)
                 }
-                bars += resolution
-                time += barsToSeconds(resolution, bpm)
                 if (null != next) {
                     while (bars >= next!!.bars()) {
                         curr = next
@@ -87,6 +71,30 @@ class TempoEvaluator(private val events: List<TempoEvent>, defaultBpm: Double) {
                             break
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun evaluate(bars: Double): Double {
+        return if (curr!!.interpolation == 0 || next == null) {
+            curr!!.value
+        } else {
+            val ay: Double = curr!!.value
+            val by: Double = next!!.value
+            val dy = by - ay
+            if (0.0 == dy) {
+                curr!!.value
+            } else {
+                val ax: Double = curr!!.bars()
+                val bx: Double = next!!.bars()
+                val dx = bx - ax
+                val slope = curr!!.slope
+                if (0.5 == slope) {
+                    ay + dy / dx * (bars - ax)
+                } else {
+                    expStepper.bySlope(bx - ax, ay, slope, by)
+                    expStepper.y(bars - ax)
                 }
             }
         }
