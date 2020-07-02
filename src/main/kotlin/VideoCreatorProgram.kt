@@ -37,13 +37,13 @@ import kotlin.random.Random
 @Suppress("ConstantConditionIf")
 fun main() {
     val audioPlaybackMode = false
-    val videoCaptureMode = false
+    val videoCaptureMode = true
 
     application {
         configure {
             width = 960
             height = 540
-            title = "Video Preview"
+            title = if (videoCaptureMode) "Video recording" else "Video Preview"
         }
         program {
             extend(Screenshots()) {
@@ -51,7 +51,7 @@ fun main() {
                 scale = 2.0
             }
 
-            val scene: Scene = Scene.list[2]
+            val scene: Scene = Scene.list[3]
 
             val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/${scene.trackKey}.wav"
             val wavFile = File(wavPath)
@@ -62,7 +62,7 @@ fun main() {
             val fontTrack = loadFont("data/fonts/IBMPlexMono-Regular.ttf", 18.0)
             val fontHex = loadFont("data/fonts/Andale Mono.ttf", 7.0)
             val fontTimeCode = loadFont("data/fonts/Andale Mono.ttf", 11.0)
-            val frame = loadImage("data/images/hud-frame.png")
+            val frame = loadImage("data/images/hud-frame-4k.png")
             val txt = loadImage("data/images/txt.png")
             val atl = loadImage("data/images/audiotool.png")
             val hero = loadImage("data/images/hero.png")
@@ -162,7 +162,7 @@ fun main() {
                     drawer.draw(circles, rgBa, bars * 2.0)
                     drawer.fontMap = fontTrack
                     drawer.fill = ColorRGBa.WHITE
-                    drawer.text(track.authors(), 40.0, 332.0)
+                    drawer.text(/*track.authors()*/"Andre Michelle", 40.0, 332.0)
                     drawer.text(track.name, 40.0, 332.0 + 16.0)
                     drawer.fontMap = fontHex
                     drawer.fill = ColorRGBa.WHITE

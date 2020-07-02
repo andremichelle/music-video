@@ -21,6 +21,12 @@ class Scene(val trackKey: String, val shadertoy: ShaderToy, val seed: Int, val b
                 ShaderToy.fromFile("data/shader/artifact-at-sea.fs") {
                     timing = { seconds, bpm -> secondsToBars(seconds, bpm) * 2.0 }
                 }, 0x30679, 0.2
+            ),
+            Scene(
+                "love_fail",
+                ShaderToy.fromFile("data/shader/the-inversion-machine.fs") {
+                    timing = { seconds, bpm -> secondsToBars(seconds, bpm) * 2.0 }
+                }, 0x30679, 0.4
             )
         )
     }
