@@ -1,6 +1,6 @@
-import audio.AudioFormatNull
+import audio.AudioFormat
 import audio.AudioTransform
-import audio.WavFormat
+import audio.WavStream
 import audio.secondsToBars
 import draw.ShaderToy
 import net.Playlist
@@ -19,8 +19,14 @@ interface Scene {
     fun wavPath(): String
 }
 
-class MixScene(val folder: String, val shadertoy: ShaderToy, val seed: Int, val backgroundAlpha: Double) : Scene {
+class MixScene(
+    val folder: String,
+    val shadertoy: ShaderToy,
+    val seed: Int,
+    val backgroundAlpha: Double
+) : Scene {
     private val wavPath: Path = Paths.get("/Users/andre.michelle/Documents/Audiotool/Mixes/$folder/mix.wav")
+    private val audioFormat: AudioFormat = WavStream.forFile(wavPath.toFile())
     private val playlist = Playlist.fetch(folder)
 
     companion object {
@@ -31,12 +37,16 @@ class MixScene(val folder: String, val shadertoy: ShaderToy, val seed: Int, val 
         )
     }
 
+    fun playlist(): Playlist {
+        return playlist
+    }
+
     override fun duration(): Double {
         return playlist.duration
     }
 
     override fun createAudioTransform(): AudioTransform {
-        return AudioTransform(AudioFormatNull())
+        return AudioTransform(audioFormat)
     }
 
     override fun printMuxCommand() {
@@ -57,14 +67,14 @@ class MixScene(val folder: String, val shadertoy: ShaderToy, val seed: Int, val 
 
 class TrackScene(val trackKey: String, val shadertoy: ShaderToy, val seed: Int, val backgroundAlpha: Double) : Scene {
     private val wavPath: Path = Paths.get("/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/$trackKey.wav")
-    private val wavFormat = WavFormat.decode(wavPath.toFile().readBytes())
+    private val audioFormat: AudioFormat = WavStream.forFile(wavPath.toFile())
 
     override fun duration(): Double {
-        return wavFormat.seconds()
+        return audioFormat.seconds()
     }
 
     override fun createAudioTransform(): AudioTransform {
-        return AudioTransform(wavFormat, 1024)
+        return AudioTransform(audioFormat, 1024)
     }
 
     override fun printMuxCommand() {

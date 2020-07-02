@@ -34,30 +34,12 @@ class ImpossibleMission(
 ) : SceneRenderer() {
     companion object {
         fun fromTrackScene(
-            trackScene: TrackScene,
+            scene: TrackScene,
             width: Int,
             height: Int,
             contentScale: Vector2
         ): ImpossibleMission {
-            val track = TrackApi.fetch(trackScene.trackKey).track
-            val renderer = ImpossibleMission(
-                width,
-                height,
-                contentScale,
-                trackScene.seed,
-                trackScene.duration(),
-                trackScene.backgroundAlpha,
-                trackScene.createAudioTransform(),
-                TempoEvaluator(TempoEvent.fetch(trackScene.trackKey), track.bpm)
-            )
-            renderer.cover = loadImage(track.cover())
-            renderer.shadertoy = trackScene.shadertoy
-            renderer.header = track.name
-            renderer.subline = track.authors()
-            return renderer
-        }
-
-        fun fromMixScene(scene: MixScene, width: Int, height: Int, contentScale: Vector2): SceneRenderer {
+            val track = TrackApi.fetch(scene.trackKey).track
             val renderer = ImpossibleMission(
                 width,
                 height,
@@ -66,8 +48,32 @@ class ImpossibleMission(
                 scene.duration(),
                 scene.backgroundAlpha,
                 scene.createAudioTransform(),
-                TempoEvaluator(emptyList(), 120.0) // TODO
+                TempoEvaluator(TempoEvent.fetch(scene.trackKey), track.bpm)
             )
+            renderer.cover = loadImage(track.cover())
+            renderer.shadertoy = scene.shadertoy
+            renderer.header = track.name
+            renderer.subline = track.authors()
+            return renderer
+        }
+
+        fun fromMixScene(scene: MixScene, width: Int, height: Int, contentScale: Vector2): SceneRenderer {
+            val playlist = scene.playlist()
+            val renderer = ImpossibleMission(
+                width,
+                height,
+                contentScale,
+                scene.seed,
+                scene.duration(),
+                scene.backgroundAlpha,
+                scene.createAudioTransform(),
+                TempoEvaluator(emptyList(), playlist.bpm)
+            )
+            val track = playlist.tracks[0]
+            renderer.cover = loadImage(track.cover())
+            renderer.shadertoy = scene.shadertoy
+            renderer.header = track.name
+            renderer.subline = track.authors()
             return renderer
         }
     }

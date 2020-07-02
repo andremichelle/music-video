@@ -1,5 +1,7 @@
 package audio
 
+import java.io.File
+import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.min
@@ -11,56 +13,57 @@ interface AudioFormat {
 
     fun sampleRate(): Int
 
-    fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Int)
+    fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Long)
 }
 
-class AudioFormatNull : AudioFormat {
-    override fun seconds(): Double {
-        return 60.0
-    }
-
-    override fun numChannels(): Int {
-        return 2
-    }
-
-    override fun sampleRate(): Int {
-        return 44100
-    }
-
-    override fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Int) {
+@Suppress("MemberVisibilityCanBePrivate")
+open class WavHeader(
+    val compression: Short,
+    val numChannels: Short,
+    val sampleRate: Int,
+    val bytesPerSecond: Int,
+    val blockAlign: Short,
+    val bitsPerChannel: Short
+) {
+    override fun toString(): String {
+        return "WavHeader(compression=$compression, " +
+                "numChannels=$numChannels, " +
+                "sampleRate=$sampleRate, " +
+                "bytesPerSecond=$bytesPerSecond, " +
+                "blockAlign=$blockAlign, " +
+                "bitsPerChannel=$bitsPerChannel)"
     }
 }
 
-open class WavFormat private constructor(
-    private val buffer: ByteBuffer,
-    private val compression: Short,
-    private val numChannels: Short,
-    private val sampleRate: Int,
-    private val bytesPerSecond: Int,
-    private val blockAlign: Short,
-    private val bitsPerChannel: Short,
-    private val numFrames: Int,
-    private val dataOffset: Int
+open class WavStream private constructor(
+    private val header: WavHeader,
+    private val dataOffset: Int,
+    private val numFrames: Long,
+    private val randomAccessFile: RandomAccessFile
 ) : AudioFormat {
-    override fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Int) {
-        val clampChannelIndex = min(channelIndex, numChannels - 1)
-        val n = min(target.size, numFrames - position)
+    private val buffer = ByteBuffer.allocate(0xFFFF).order(ByteOrder.LITTLE_ENDIAN)
+
+    override fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Long) {
+        val clampChannelIndex = min(channelIndex, numChannels() - 1)
+        val n = min(target.size, (numFrames - position).toInt())
         var i = 0
         if (n > 0) {
-            buffer.position(dataOffset + position * blockAlign)
-            if (16 == bitsPerChannel.toInt()) {
-                val shortBuffer = buffer.slice().order(ByteOrder.LITTLE_ENDIAN).asShortBuffer()
+            randomAccessFile.seek(dataOffset.toLong() + position * header.blockAlign)
+            if (16 == header.bitsPerChannel.toInt()) {
+                randomAccessFile.read(buffer.array(), 0, n shl 1)
+                val shortBuffer = buffer.asShortBuffer()
                 val scale = 1.0 / Short.MAX_VALUE.toDouble()
                 while (i < n) {
-                    val shortIndex = i * numChannels + clampChannelIndex
+                    val shortIndex = i * header.numChannels + clampChannelIndex
                     val shortValue = shortBuffer[shortIndex]
                     target[i] = (shortValue * scale).toFloat()
                     ++i
                 }
-            } else if (32 == bitsPerChannel.toInt()) {
-                val floatBuffer = buffer.slice().order(ByteOrder.LITTLE_ENDIAN).asFloatBuffer()
+            } else if (32 == header.bitsPerChannel.toInt()) {
+                randomAccessFile.read(buffer.array(), 0, n shl 2)
+                val floatBuffer = buffer.asFloatBuffer()
                 while (i < n) {
-                    target[i] = floatBuffer[i * numChannels + clampChannelIndex]
+                    target[i] = floatBuffer[i * header.numChannels + clampChannelIndex]
                     ++i
                 }
             }
@@ -72,81 +75,57 @@ open class WavFormat private constructor(
     }
 
     override fun seconds(): Double {
-        return numFrames / sampleRate.toDouble()
+        return numFrames / sampleRate().toDouble()
     }
 
     override fun numChannels(): Int {
-        return numChannels.toInt()
+        return header.numChannels.toInt()
     }
 
     override fun sampleRate(): Int {
-        return sampleRate
+        return header.sampleRate
     }
 
     override fun toString(): String {
-        return "{Wav" +
-                " buffer:" + (buffer.capacity() shr 10) + "k" +
-                ", compression:" + compression +
-                ", numChannels:" + numChannels +
-                ", sampleRate:" + sampleRate +
-                ", bytesPerSecond:" + bytesPerSecond +
-                ", blockAlign:" + blockAlign +
-                ", bitsPerChannel:" + bitsPerChannel +
-                ", dataOffset:" + dataOffset +
-                ", numFrames:" + numFrames +
-                "}"
+        return "WavStream(header=$header)"
     }
 
     companion object {
-        fun decode(bytes: ByteArray): WavFormat {
-            val buffer = ByteBuffer.wrap(bytes)
-            buffer.order(ByteOrder.LITTLE_ENDIAN)
-            require(buffer.int == MAGIC_RIFF) { "Expected RIFF" }
-            require(bytes.size == buffer.int + 8) { "WAV length does not match" }
-            require(buffer.int == MAGIC_WAVE) { "WAV does not start with WAVE" }
-            var compression: Short = -1
-            var numChannels: Short = -1
-            var sampleRate = -1
-            var bytesPerSecond = -1
-            var blockAlign: Short = -1
-            var bitsPerChannel: Short = -1
-            var dataOffset = -1
-            var numFrames = -1
-            var header = false
-            var data = false
-            while (8 < buffer.remaining()) {
-                val id = buffer.int
-                val length = buffer.int
-                val position = buffer.position()
-                if (id == MAGIC_FMT) {
-                    compression = buffer.short
-                    numChannels = buffer.short
-                    sampleRate = buffer.int
-                    bytesPerSecond = buffer.int
-                    blockAlign = buffer.short
-                    bitsPerChannel = buffer.short
-                    header = true
-                } else if (id == MAGIC_DATA) {
-                    assert(-1 != blockAlign.toInt()) { "Header has not been read" }
-                    dataOffset = position
-                    numFrames = length / blockAlign
-                    data = true
-                }
-                if (header && data) {
-                    return WavFormat(
-                        buffer, compression, numChannels,
-                        sampleRate, bytesPerSecond, blockAlign,
-                        bitsPerChannel, numFrames, dataOffset
-                    )
-                }
-                buffer.position(position + length)
-            }
-            throw IllegalArgumentException("Unknown wav-format")
-        }
-
         private const val MAGIC_RIFF = 0x46464952
         private const val MAGIC_WAVE = 0x45564157
         private const val MAGIC_FMT = 0x20746d66
         private const val MAGIC_DATA = 0x61746164
+
+        fun forFile(file: File): AudioFormat {
+            val randomAccessFile = RandomAccessFile(file, "r")
+            val buffer = ByteBuffer.allocate(44)
+            randomAccessFile.read(buffer.array())
+            buffer.order(ByteOrder.LITTLE_ENDIAN)
+            require(buffer.int == MAGIC_RIFF) { "Expected RIFF" }
+            buffer.int // file length
+            require(buffer.int == MAGIC_WAVE) { "WAV does not start with WAVE" }
+            require(buffer.int == MAGIC_FMT) { "First chunk must be FMT" }
+            buffer.int // chunk length
+            val compression = buffer.short
+            val numChannels = buffer.short
+            val sampleRate = buffer.int
+            val bytesPerSecond = buffer.int
+            val blockAlign = buffer.short
+            val bitsPerChannel = buffer.short
+            require(buffer.int == MAGIC_DATA) { "Second chunk must be DATA" }
+            val length = buffer.int.toLong() and 0xFFFFFFFF
+            val numFrames = length / blockAlign.toLong()
+            val dataOffset = buffer.position()
+            return WavStream(
+                WavHeader(
+                    compression,
+                    numChannels,
+                    sampleRate,
+                    bytesPerSecond,
+                    blockAlign,
+                    bitsPerChannel
+                ), dataOffset, numFrames, randomAccessFile
+            )
+        }
     }
 }

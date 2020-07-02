@@ -1,5 +1,5 @@
 import audio.AudioPlayback
-import audio.AudioPlaybackImpl
+import audio.AudioPlaybackSample
 import audio.AudioPlaybackNone
 import draw.FpsMeter
 import draw.FpsMeter.Companion.draw
@@ -42,7 +42,7 @@ fun main() {
             val scene: Scene
 
             scene = MixScene.list[0]
-//            scene = TrackScene.list[3]
+//            scene = TrackScene.list[0]
 
             val fpsMeter = FpsMeter()
             val contentScale = if (videoCaptureMode) {
@@ -59,7 +59,7 @@ fun main() {
             }
             val audioPlayback: AudioPlayback =
                 if (audioPlaybackMode && !videoCaptureMode) {
-                    AudioPlaybackImpl(scene.wavPath())
+                    AudioPlaybackSample(scene.wavPath())
                 } else {
                     AudioPlaybackNone(this)
                 }

@@ -27,7 +27,7 @@ class AudioPlaybackNone(private val program: Program) : AudioPlayback {
     }
 }
 
-class AudioPlaybackImpl(samplePath: String) : AudioPlayback {
+class AudioPlaybackSample(samplePath: String) : AudioPlayback {
     private val context: AudioContext = AudioContext(
         JavaSoundAudioIO(512),
         512,
