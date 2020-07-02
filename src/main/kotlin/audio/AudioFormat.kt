@@ -14,6 +14,23 @@ interface AudioFormat {
     fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Int)
 }
 
+class AudioFormatNull : AudioFormat {
+    override fun seconds(): Double {
+        return 60.0
+    }
+
+    override fun numChannels(): Int {
+        return 2
+    }
+
+    override fun sampleRate(): Int {
+        return 44100
+    }
+
+    override fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Int) {
+    }
+}
+
 open class WavFormat private constructor(
     private val buffer: ByteBuffer,
     private val compression: Short,

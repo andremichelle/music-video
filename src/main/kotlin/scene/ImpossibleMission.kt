@@ -1,14 +1,14 @@
 package scene
 
-import audio.AudioTransform
-import audio.TempoEvaluator
-import audio.formatDuration
-import audio.normDb
+import MixScene
+import TrackScene
+import audio.*
 import draw.Hud
 import draw.Hud.Circle.Companion.draw
 import draw.ShaderToy
 import draw.Spectrum
 import draw.Waveform
+import net.TrackApi
 import org.openrndr.Program
 import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.*
@@ -32,6 +32,46 @@ class ImpossibleMission(
     private val transform: AudioTransform,
     private val tempoEvaluator: TempoEvaluator
 ) : SceneRenderer() {
+    companion object {
+        fun fromTrackScene(
+            trackScene: TrackScene,
+            width: Int,
+            height: Int,
+            contentScale: Vector2
+        ): ImpossibleMission {
+            val track = TrackApi.fetch(trackScene.trackKey).track
+            val renderer = ImpossibleMission(
+                width,
+                height,
+                contentScale,
+                trackScene.seed,
+                trackScene.duration(),
+                trackScene.backgroundAlpha,
+                trackScene.createAudioTransform(),
+                TempoEvaluator(TempoEvent.fetch(trackScene.trackKey), track.bpm)
+            )
+            renderer.cover = loadImage(track.cover())
+            renderer.shadertoy = trackScene.shadertoy
+            renderer.header = track.name
+            renderer.subline = track.authors()
+            return renderer
+        }
+
+        fun fromMixScene(scene: MixScene, width: Int, height: Int, contentScale: Vector2): SceneRenderer {
+            val renderer = ImpossibleMission(
+                width,
+                height,
+                contentScale,
+                scene.seed,
+                scene.duration(),
+                scene.backgroundAlpha,
+                scene.createAudioTransform(),
+                TempoEvaluator(emptyList(), 120.0) // TODO
+            )
+            return renderer
+        }
+    }
+
     var shadertoy: ShaderToy? = null
     var cover: ColorBuffer? = null
     var header: String? = null

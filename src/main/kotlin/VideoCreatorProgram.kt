@@ -1,15 +1,14 @@
-import audio.*
+import audio.AudioPlayback
+import audio.AudioPlaybackImpl
+import audio.AudioPlaybackNone
 import draw.FpsMeter
 import draw.FpsMeter.Companion.draw
-import net.TrackApi
 import org.openrndr.application
-import org.openrndr.draw.loadImage
 import org.openrndr.extensions.Screenshots
 import org.openrndr.ffmpeg.ScreenRecorder
 import org.openrndr.math.Vector2
 import scene.ImpossibleMission
-import java.io.File
-import java.nio.file.Paths
+import scene.SceneRenderer
 
 // Try
 // https://www.shadertoy.com/view/ls3Xzf (glitch)
@@ -25,7 +24,7 @@ import java.nio.file.Paths
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val audioPlaybackMode = true
+    val audioPlaybackMode = false
     val videoCaptureMode = false
 
     application {
@@ -40,53 +39,36 @@ fun main() {
                 scale = 2.0
             }
 
-            val scene: Scene = Scene.list[3]
+            val scene: Scene
 
-            val wavPath = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/${scene.trackKey}.wav"
-            val wavFile = File(wavPath)
-            val wavFormat = WavFormat.decode(wavFile.readBytes())
-            val track = TrackApi.fetch(scene.trackKey).track
+            scene = MixScene.list[0]
+//            scene = TrackScene.list[3]
 
             val fpsMeter = FpsMeter()
-
             val contentScale = if (videoCaptureMode) {
-                // call this in terminal to mux audio into video
-                println(
-                    "ffmpeg -i ${Paths.get("tmp/${scene.trackKey}.mp4").toAbsolutePath()} -i ${wavFile.toPath()
-                        .toAbsolutePath()} -c copy tmp/${scene.trackKey}.mkv"
-                )
+                scene.printMuxCommand()
                 Vector2(extend(ScreenRecorder()) {
-                    outputFile = "tmp/${scene.trackKey}.mp4"
+                    outputFile = scene.mp4OutputPath()
                     quitAfterMaximum = true
-                    maximumDuration = wavFormat.seconds()
+                    maximumDuration = scene.duration()
                     frameRate = 60
                     contentScale = 2.0
                 }.contentScale)
             } else {
                 window.scale
             }
-
             val audioPlayback: AudioPlayback =
                 if (audioPlaybackMode && !videoCaptureMode) {
-                    AudioPlaybackImpl(wavPath)
+                    AudioPlaybackImpl(scene.wavPath())
                 } else {
                     AudioPlaybackNone(this)
                 }
 
-            val renderer = ImpossibleMission(
-                width,
-                height,
-                contentScale,
-                scene.seed,
-                wavFormat.seconds(),
-                scene.backgroundAlpha,
-                AudioTransform(wavFormat, 1024),
-                TempoEvaluator(TempoEvent.fetch(scene.trackKey), track.bpm)
-            )
-            renderer.cover = loadImage(track.cover())
-            renderer.shadertoy = scene.shadertoy
-            renderer.header = track.name
-            renderer.subline = track.authors()
+            @Suppress("USELESS_IS_CHECK") val renderer: SceneRenderer = when (scene) {
+                is MixScene -> ImpossibleMission.fromMixScene(scene, width, height, contentScale)
+                is TrackScene -> ImpossibleMission.fromTrackScene(scene, width, height, contentScale)
+                else -> throw IllegalStateException()
+            }
 
             if (!videoCaptureMode) {
                 audioPlayback.play()
