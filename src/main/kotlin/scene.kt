@@ -7,8 +7,10 @@ import net.Playlist
 import java.nio.file.Path
 import java.nio.file.Paths
 
-interface Scene {
+interface SceneSetup {
     fun duration(): Double
+
+    fun createAudioFormat(): AudioFormat
 
     fun createAudioTransform(): AudioTransform
 
@@ -19,19 +21,19 @@ interface Scene {
     fun wavPath(): String
 }
 
-class MixScene(
+class MixSceneSetup(
     val folder: String,
     val shadertoy: ShaderToy,
     val seed: Int,
     val backgroundAlpha: Double
-) : Scene {
+) : SceneSetup {
     private val wavPath: Path = Paths.get("/Users/andre.michelle/Documents/Audiotool/Mixes/$folder/mix.wav")
-    private val audioFormat: AudioFormat = WavStream.forFile(wavPath.toFile())
+    private val audioFormat: AudioFormat = createAudioFormat()
     private val playlist = Playlist.fetch(folder)
 
     companion object {
         val list = listOf(
-            MixScene("synth-wave", ShaderToy.fromFile("data/shader/shiny-spheres.fs") {
+            MixSceneSetup("synth-wave", ShaderToy.fromFile("data/shader/shiny-spheres.fs") {
                 timing = { seconds, _ -> seconds * 0.5 }
             }, 0x306709, 0.6)
         )
@@ -43,6 +45,10 @@ class MixScene(
 
     override fun duration(): Double {
         return playlist.duration
+    }
+
+    override fun createAudioFormat(): AudioFormat {
+        return WavStream.forFile(wavPath.toFile())
     }
 
     override fun createAudioTransform(): AudioTransform {
@@ -65,12 +71,17 @@ class MixScene(
     }
 }
 
-class TrackScene(val trackKey: String, val shadertoy: ShaderToy, val seed: Int, val backgroundAlpha: Double) : Scene {
+class TrackSceneSetup(val trackKey: String, val shadertoy: ShaderToy, val seed: Int, val backgroundAlpha: Double) :
+    SceneSetup {
     private val wavPath: Path = Paths.get("/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/$trackKey.wav")
-    private val audioFormat: AudioFormat = WavStream.forFile(wavPath.toFile())
+    private val audioFormat: AudioFormat = createAudioFormat()
 
     override fun duration(): Double {
         return audioFormat.seconds()
+    }
+
+    override fun createAudioFormat(): AudioFormat {
+        return WavStream.forFile(wavPath.toFile())
     }
 
     override fun createAudioTransform(): AudioTransform {
@@ -94,25 +105,25 @@ class TrackScene(val trackKey: String, val shadertoy: ShaderToy, val seed: Int, 
 
     companion object {
         val list = listOf(
-            TrackScene(
+            TrackSceneSetup(
                 "you_won_t_understand",
                 ShaderToy.fromFile("data/shader/shiny-spheres.fs") {
                     timing = { seconds, _ -> seconds * 0.5 }
                 }, 0x306709, 0.6
             ),
-            TrackScene(
+            TrackSceneSetup(
                 "ztdqgahfsdhdzwroap5c2zvkosfzyem",
                 ShaderToy.fromFile("data/shader/clouds.fs") {
                     timing = { seconds, _ -> seconds * 0.5 }
                 }, 0x6709, 0.1
             ),
-            TrackScene(
+            TrackSceneSetup(
                 "iwd52a2x",
                 ShaderToy.fromFile("data/shader/artifact-at-sea.fs") {
                     timing = { seconds, bpm -> secondsToBars(seconds, bpm) * 2.0 }
                 }, 0x30679, 0.2
             ),
-            TrackScene(
+            TrackSceneSetup(
                 "love_fail",
                 ShaderToy.fromFile("data/shader/the-inversion-machine.fs") {
                     timing = { seconds, bpm -> secondsToBars(seconds, bpm) * 2.0 }

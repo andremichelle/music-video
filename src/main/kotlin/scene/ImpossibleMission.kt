@@ -1,7 +1,7 @@
 package scene
 
-import MixScene
-import TrackScene
+import MixSceneSetup
+import TrackSceneSetup
 import audio.*
 import draw.Hud
 import draw.Hud.Circle.Companion.draw
@@ -34,7 +34,7 @@ class ImpossibleMission(
 ) : SceneRenderer() {
     companion object {
         fun fromTrackScene(
-            scene: TrackScene,
+            scene: TrackSceneSetup,
             width: Int,
             height: Int,
             contentScale: Vector2
@@ -57,7 +57,7 @@ class ImpossibleMission(
             return renderer
         }
 
-        fun fromMixScene(scene: MixScene, width: Int, height: Int, contentScale: Vector2): SceneRenderer {
+        fun fromMixScene(scene: MixSceneSetup, width: Int, height: Int, contentScale: Vector2): SceneRenderer {
             val playlist = scene.playlist()
             val renderer = ImpossibleMission(
                 width,

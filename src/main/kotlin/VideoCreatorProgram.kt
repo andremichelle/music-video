@@ -1,6 +1,6 @@
 import audio.AudioPlayback
-import audio.AudioPlaybackSample
 import audio.AudioPlaybackNone
+import audio.AudioPlaybackStream
 import draw.FpsMeter
 import draw.FpsMeter.Companion.draw
 import org.openrndr.application
@@ -24,7 +24,7 @@ import scene.SceneRenderer
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val audioPlaybackMode = false
+    val audioPlaybackMode = true
     val videoCaptureMode = false
 
     application {
@@ -39,18 +39,18 @@ fun main() {
                 scale = 2.0
             }
 
-            val scene: Scene
+            val sceneSetup: SceneSetup
 
-            scene = MixScene.list[0]
+            sceneSetup = MixSceneSetup.list[0]
 //            scene = TrackScene.list[0]
 
             val fpsMeter = FpsMeter()
             val contentScale = if (videoCaptureMode) {
-                scene.printMuxCommand()
+                sceneSetup.printMuxCommand()
                 Vector2(extend(ScreenRecorder()) {
-                    outputFile = scene.mp4OutputPath()
+                    outputFile = sceneSetup.mp4OutputPath()
                     quitAfterMaximum = true
-                    maximumDuration = scene.duration()
+                    maximumDuration = sceneSetup.duration()
                     frameRate = 60
                     contentScale = 2.0
                 }.contentScale)
@@ -59,14 +59,14 @@ fun main() {
             }
             val audioPlayback: AudioPlayback =
                 if (audioPlaybackMode && !videoCaptureMode) {
-                    AudioPlaybackSample(scene.wavPath())
+                    AudioPlaybackStream.create(sceneSetup.createAudioFormat())
                 } else {
                     AudioPlaybackNone(this)
                 }
 
-            @Suppress("USELESS_IS_CHECK") val renderer: SceneRenderer = when (scene) {
-                is MixScene -> ImpossibleMission.fromMixScene(scene, width, height, contentScale)
-                is TrackScene -> ImpossibleMission.fromTrackScene(scene, width, height, contentScale)
+            @Suppress("USELESS_IS_CHECK") val renderer: SceneRenderer = when (sceneSetup) {
+                is MixSceneSetup -> ImpossibleMission.fromMixScene(sceneSetup, width, height, contentScale)
+                is TrackSceneSetup -> ImpossibleMission.fromTrackScene(sceneSetup, width, height, contentScale)
                 else -> throw IllegalStateException()
             }
 

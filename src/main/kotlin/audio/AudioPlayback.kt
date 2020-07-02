@@ -2,9 +2,8 @@ package audio
 
 import net.beadsproject.beads.core.AudioContext
 import net.beadsproject.beads.core.IOAudioFormat
+import net.beadsproject.beads.core.UGen
 import net.beadsproject.beads.core.io.JavaSoundAudioIO
-import net.beadsproject.beads.data.SampleManager
-import net.beadsproject.beads.ugens.SamplePlayer
 import org.openrndr.Program
 
 interface AudioPlayback {
@@ -27,42 +26,39 @@ class AudioPlaybackNone(private val program: Program) : AudioPlayback {
     }
 }
 
-class AudioPlaybackSample(samplePath: String) : AudioPlayback {
-    private val context: AudioContext = AudioContext(
-        JavaSoundAudioIO(512),
-        512,
-        IOAudioFormat(44100.0f, 16, 0, 2)
-    )
-    private val samplePlayer: SamplePlayer
-
-    init {
-        samplePlayer = SamplePlayer(context, SampleManager.sample(samplePath))
-        context.out.addInput(samplePlayer)
-
-        // TODO this does not work just yet
-        Runtime.getRuntime().addShutdownHook(object : Thread() {
-            override fun run() {
-                println("shutdown")
-                samplePlayer.kill()
-                context.stop()
-            }
-        })
-    }
+class AudioPlaybackStream(context: AudioContext, private val format: AudioFormat) : AudioPlayback, UGen(context, 2) {
+    var position: Long = 0
 
     override fun play() {
         if (!context.isRunning) {
             context.start()
         }
-        samplePlayer.start()
     }
 
     override fun seconds(): Double {
-        return samplePlayer.position / 1000.0
+        return position.toDouble() / format.sampleRate().toDouble()
     }
 
     override fun stop() {
-        println("Stop")
         context.stop()
-        samplePlayer.kill()
+    }
+
+    override fun calculateBuffer() {
+        format.readChannelFloat(bufOut[0], 0, position)
+        format.readChannelFloat(bufOut[1], 1, position)
+        position += bufferSize
+    }
+
+    companion object {
+        fun create(format: AudioFormat): AudioPlaybackStream {
+            val context = AudioContext(
+                JavaSoundAudioIO(256),
+                256,
+                IOAudioFormat(format.sampleRate().toFloat(), 16, 0, 2)
+            )
+            val playbackStream = AudioPlaybackStream(context, format)
+            context.out.addInput(playbackStream)
+            return playbackStream
+        }
     }
 }

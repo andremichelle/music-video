@@ -49,8 +49,8 @@ open class WavStream private constructor(
         var i = 0
         if (n > 0) {
             randomAccessFile.seek(dataOffset.toLong() + position * header.blockAlign)
+            randomAccessFile.read(buffer.array(), 0, n * header.blockAlign)
             if (16 == header.bitsPerChannel.toInt()) {
-                randomAccessFile.read(buffer.array(), 0, n shl 1)
                 val shortBuffer = buffer.asShortBuffer()
                 val scale = 1.0 / Short.MAX_VALUE.toDouble()
                 while (i < n) {
@@ -60,8 +60,7 @@ open class WavStream private constructor(
                     ++i
                 }
             } else if (32 == header.bitsPerChannel.toInt()) {
-                randomAccessFile.read(buffer.array(), 0, n shl 2)
-                val floatBuffer = buffer.asFloatBuffer()
+                val floatBuffer = buffer.slice().asFloatBuffer()
                 while (i < n) {
                     target[i] = floatBuffer[i * header.numChannels + clampChannelIndex]
                     ++i
@@ -97,6 +96,7 @@ open class WavStream private constructor(
         private const val MAGIC_DATA = 0x61746164
 
         fun forFile(file: File): AudioFormat {
+            require(file.exists()) { "File does not exists (${file.toPath()})" }
             val randomAccessFile = RandomAccessFile(file, "r")
             val buffer = ByteBuffer.allocate(44)
             randomAccessFile.read(buffer.array())
