@@ -33,7 +33,7 @@ class MixSceneSetup(
 
     companion object {
         val list = listOf(
-            MixSceneSetup("synth-wave", ShaderToy.fromFile("data/shader/shiny-spheres.fs") {
+            MixSceneSetup("tech-house", ShaderToy.fromFile("data/shader/shiny-spheres.fs") {
                 timing = { seconds, _ -> seconds * 0.5 }
             }, 0x306709, 0.6)
         )
