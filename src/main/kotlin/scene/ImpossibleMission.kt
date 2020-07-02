@@ -8,6 +8,7 @@ import draw.Hud.Circle.Companion.draw
 import draw.ShaderToy
 import draw.Spectrum
 import draw.Waveform
+import net.Playlist
 import net.TrackApi
 import org.openrndr.Program
 import org.openrndr.color.ColorRGBa
@@ -30,7 +31,8 @@ class ImpossibleMission(
     private val duration: Double,
     private val backgroundAlpha: Double = 0.6,
     private val transform: AudioTransform,
-    private val tempoEvaluator: TempoEvaluator
+    private val tempoEvaluator: TempoEvaluator,
+    private val onEnterFrame: (ImpossibleMission, Double) -> Unit
 ) : SceneRenderer() {
     companion object {
         fun fromTrackScene(
@@ -49,7 +51,7 @@ class ImpossibleMission(
                 scene.backgroundAlpha,
                 scene.createAudioTransform(),
                 TempoEvaluator(TempoEvent.fetch(scene.trackKey), track.bpm)
-            )
+            ) { _: ImpossibleMission, _: Double -> }
             renderer.cover = loadImage(track.cover())
             renderer.shadertoy = scene.shadertoy
             renderer.header = track.name
@@ -59,6 +61,14 @@ class ImpossibleMission(
 
         fun fromMixScene(scene: MixSceneSetup, width: Int, height: Int, contentScale: Vector2): SceneRenderer {
             val playlist = scene.playlist()
+            val tracks = playlist.tracks
+            val updateTrack = { renderer: ImpossibleMission, track: Playlist.Track ->
+                renderer.cover = loadImage(track.cover())
+                renderer.shadertoy = scene.shadertoy
+                renderer.header = track.name
+                renderer.subline = track.authors()
+            }
+            var trackIndex = 0
             val renderer = ImpossibleMission(
                 width,
                 height,
@@ -68,12 +78,15 @@ class ImpossibleMission(
                 scene.backgroundAlpha,
                 scene.createAudioTransform(),
                 TempoEvaluator(emptyList(), playlist.bpm)
-            )
-            val track = playlist.tracks[0]
-            renderer.cover = loadImage(track.cover())
-            renderer.shadertoy = scene.shadertoy
-            renderer.header = track.name
-            renderer.subline = track.authors()
+            ) { renderer: ImpossibleMission, seconds: Double ->
+                if (trackIndex + 1 < tracks.size) {
+                    if (seconds >= tracks[trackIndex + 1].position) {
+                        trackIndex++
+                        updateTrack(renderer, tracks[trackIndex])
+                    }
+                }
+            }
+            updateTrack(renderer, tracks[0])
             return renderer
         }
     }
@@ -135,6 +148,8 @@ class ImpossibleMission(
     }
 
     override fun render(program: Program, seconds: Double) {
+        onEnterFrame(this, seconds)
+
         val drawer = program.drawer
         drawer.clear(ColorRGBa.BLACK)
         transform.advance(seconds)
@@ -210,7 +225,7 @@ class ImpossibleMission(
         val htR = normDb(transform.peakDb(1)) * 125.0
         drawer.rectangle(578.0, 503.0 - htL, 5.0, htL)
         drawer.rectangle(594.0, 503.0 - htR, 5.0, htR)
-        val fadeInTime = 1.0
+        val fadeInTime = 4.0
         val fadeOutTime = 5.0
         val alphaInv = clamp(
             (seconds - (duration - fadeOutTime)) / fadeOutTime,

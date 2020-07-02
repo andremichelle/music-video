@@ -22,7 +22,7 @@ interface SceneSetup {
 }
 
 class MixSceneSetup(
-    val folder: String,
+    private val folder: String,
     val shadertoy: ShaderToy,
     val seed: Int,
     val backgroundAlpha: Double
@@ -33,8 +33,8 @@ class MixSceneSetup(
 
     companion object {
         val list = listOf(
-            MixSceneSetup("tech-house", ShaderToy.fromFile("data/shader/shiny-spheres.fs") {
-                timing = { seconds, _ -> seconds * 0.5 }
+            MixSceneSetup("tech-house", ShaderToy.fromFile("data/shader/day-179.fs") {
+                timing = { seconds, bpm -> secondsToBars(seconds, bpm) }
             }, 0x306709, 0.6)
         )
     }
@@ -71,8 +71,12 @@ class MixSceneSetup(
     }
 }
 
-class TrackSceneSetup(val trackKey: String, val shadertoy: ShaderToy, val seed: Int, val backgroundAlpha: Double) :
-    SceneSetup {
+class TrackSceneSetup(
+    val trackKey: String,
+    val shadertoy: ShaderToy,
+    val seed: Int,
+    val backgroundAlpha: Double
+) : SceneSetup {
     private val wavPath: Path = Paths.get("/Users/andre.michelle/Documents/Audiotool/Mixes/cache/mixdown/$trackKey.wav")
     private val audioFormat: AudioFormat = createAudioFormat()
 

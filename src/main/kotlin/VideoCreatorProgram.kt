@@ -24,8 +24,8 @@ import scene.SceneRenderer
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val audioPlaybackMode = true
-    val videoCaptureMode = false
+    val audioPlaybackMode = false
+    val videoCaptureMode = true
 
     application {
         configure {
@@ -51,7 +51,7 @@ fun main() {
                     outputFile = sceneSetup.mp4OutputPath()
                     quitAfterMaximum = true
                     maximumDuration = sceneSetup.duration()
-                    frameRate = 60
+                    frameRate = 30
                     contentScale = 2.0
                 }.contentScale)
             } else {
