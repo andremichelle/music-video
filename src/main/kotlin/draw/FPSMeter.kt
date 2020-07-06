@@ -4,7 +4,7 @@ import org.openrndr.color.ColorRGBa
 import org.openrndr.draw.Drawer
 import org.openrndr.draw.loadFont
 
-class FpsMeter {
+class FPSMeter {
     private val font = loadFont("data/fonts/IBMPlexMono-Regular.ttf", 11.0)
 
     private var lastTimeStamp: Double = Double.NaN
@@ -12,7 +12,7 @@ class FpsMeter {
     private var frameCounter = 0
 
     companion object {
-        fun Drawer.draw(fpsMeter: FpsMeter, seconds: Double) {
+        fun Drawer.draw(fpsMeter: FPSMeter, seconds: Double) {
             fpsMeter.update(seconds)
             fontMap = fpsMeter.font
             fill = ColorRGBa.WHITE

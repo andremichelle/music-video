@@ -1,8 +1,9 @@
 import audio.AudioPlayback
 import audio.AudioPlaybackNone
 import audio.AudioPlaybackStream
-import draw.FpsMeter
-import draw.FpsMeter.Companion.draw
+import draw.Estimation
+import draw.FPSMeter
+import draw.FPSMeter.Companion.draw
 import org.openrndr.application
 import org.openrndr.extensions.Screenshots
 import org.openrndr.ffmpeg.ScreenRecorder
@@ -30,7 +31,7 @@ fun main() {
         configure {
             width = 960
             height = 540
-            title = if (videoCaptureMode) "Video recording (0%)" else "Video Preview"
+            title = if (videoCaptureMode) "Video recording" else "Video Preview"
         }
         program {
             extend(Screenshots()) {
@@ -43,7 +44,7 @@ fun main() {
             sceneSetup = MixSceneSetup.EDM
 //            scene = TrackScene.list[0]
 
-            val fpsMeter = FpsMeter()
+            val fpsMeter = FPSMeter()
             val contentScale = if (videoCaptureMode) {
                 sceneSetup.printMuxCommand()
                 Vector2(extend(ScreenRecorder()) {
@@ -72,15 +73,11 @@ fun main() {
             if (!videoCaptureMode) {
                 audioPlayback.play()
             }
-            var lastPercent = 0
+            val estimation = Estimation(window)
             extend {
                 renderer.render(this, if (videoCaptureMode) seconds else audioPlayback.seconds())
                 if (videoCaptureMode) {
-                    val percent = (seconds / sceneSetup.duration() * 1000.0).toInt()
-                    if (lastPercent != percent) {
-                        window.title = "Video recording (${percent / 10.0}%)"
-                        lastPercent = percent
-                    }
+                    estimation.update(seconds / sceneSetup.duration())
                 } else {
                     drawer.draw(fpsMeter, seconds)
                 }
