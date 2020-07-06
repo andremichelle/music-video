@@ -29,7 +29,12 @@ class Playlist(val tracks: List<Track>, val bpm: Double, val duration: Double) {
         fun authors(): String {
             val regex = Regex("[^A-Za-z0-9 ]")
             val string = artists.joinToString { it.name }
-            return regex.replace(string, "").trim()
+            val authors = regex.replace(string, "").trim()
+            return if (authors.length > 80) {
+                authors.substring(0, 80) + "..."
+            } else {
+                authors
+            }
         }
 
         override fun toString(): String {

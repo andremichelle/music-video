@@ -1,3 +1,5 @@
+package scene
+
 import audio.AudioFormat
 import audio.AudioTransform
 import audio.WavStream
@@ -31,12 +33,14 @@ class MixSceneSetup(
     private val audioFormat: AudioFormat = createAudioFormat()
     private val playlist = Playlist.fetch(folder)
 
+    @Suppress("unused")
     companion object {
-        val list = listOf(
-            MixSceneSetup("tech-house", ShaderToy.fromFile("data/shader/day-179.fs") {
-                timing = { seconds, bpm -> secondsToBars(seconds, bpm) }
-            }, 0x306709, 0.6)
-        )
+        val EDM = MixSceneSetup("edm", ShaderToy.fromFile("data/shader/the-popular-shader.fs") {
+            timing = { seconds, bpm -> secondsToBars(seconds, bpm) }
+        }, 0x30609, 0.4)
+        val TECHNO = MixSceneSetup("techno", ShaderToy.fromFile("data/shader/day-179.fs") {
+            timing = { seconds, bpm -> secondsToBars(seconds, bpm) * 2.0 }
+        }, 0x36963, 0.6)
     }
 
     fun playlist(): Playlist {

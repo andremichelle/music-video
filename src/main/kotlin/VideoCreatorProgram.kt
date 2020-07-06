@@ -7,8 +7,7 @@ import org.openrndr.application
 import org.openrndr.extensions.Screenshots
 import org.openrndr.ffmpeg.ScreenRecorder
 import org.openrndr.math.Vector2
-import scene.ImpossibleMission
-import scene.SceneRenderer
+import scene.*
 
 // Try
 // https://www.shadertoy.com/view/ls3Xzf (glitch)
@@ -25,13 +24,13 @@ import scene.SceneRenderer
 @Suppress("ConstantConditionIf")
 fun main() {
     val audioPlaybackMode = false
-    val videoCaptureMode = true
+    val videoCaptureMode = false
 
     application {
         configure {
             width = 960
             height = 540
-            title = if (videoCaptureMode) "Video recording" else "Video Preview"
+            title = if (videoCaptureMode) "Video recording (0%)" else "Video Preview"
         }
         program {
             extend(Screenshots()) {
@@ -41,7 +40,7 @@ fun main() {
 
             val sceneSetup: SceneSetup
 
-            sceneSetup = MixSceneSetup.list[0]
+            sceneSetup = MixSceneSetup.EDM
 //            scene = TrackScene.list[0]
 
             val fpsMeter = FpsMeter()
@@ -73,9 +72,16 @@ fun main() {
             if (!videoCaptureMode) {
                 audioPlayback.play()
             }
+            var lastPercent = 0
             extend {
                 renderer.render(this, if (videoCaptureMode) seconds else audioPlayback.seconds())
-                if (!videoCaptureMode) {
+                if (videoCaptureMode) {
+                    val percent = (seconds / sceneSetup.duration() * 1000.0).toInt()
+                    if (lastPercent != percent) {
+                        window.title = "Video recording (${percent / 10.0}%)"
+                        lastPercent = percent
+                    }
+                } else {
                     drawer.draw(fpsMeter, seconds)
                 }
             }

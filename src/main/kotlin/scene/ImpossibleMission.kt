@@ -1,7 +1,5 @@
 package scene
 
-import MixSceneSetup
-import TrackSceneSetup
 import audio.*
 import draw.Hud
 import draw.Hud.Circle.Companion.draw
@@ -204,14 +202,14 @@ class ImpossibleMission(
             drawer.drawStyle.colorMatrix = heroColorMatrix
             drawer.image(
                 hero,
-                Rectangle(32.0 * (floor(bars * 4.0 * 7.0 + 5.0) % 7), 0.0, 32.0, 32.0),
+                Rectangle(32.0 * (floor(bars * 4.0 * 7.0 + 1.0) % 7), 0.0, 32.0, 32.0),
                 Rectangle(886.0 - 16.0, 468.0 - 16.0, 32.0, 32.0)
             )
         }
         bloom.apply(rt.colorBuffer(0), blurred)
         val timedInterval = max(ceil(1.0 - mod(bars, 8.0)), 0.0)
         chromaticAberration.aberrationFactor =
-            0.5 + cos(bars * PI * 0.5).pow(64.0) * 8.0 * timedInterval
+            0.5 + cos(bars * PI * 0.5).pow(256.0) * 4.0 * timedInterval
         chromaticAberration.apply(blurred, blurred)
         drawer.stroke = null
         drawer.fill = ColorRGBa(0.0, 0.0, 0.0, backgroundAlpha)
@@ -225,8 +223,8 @@ class ImpossibleMission(
         val htR = normDb(transform.peakDb(1)) * 125.0
         drawer.rectangle(578.0, 503.0 - htL, 5.0, htL)
         drawer.rectangle(594.0, 503.0 - htR, 5.0, htR)
-        val fadeInTime = 4.0
-        val fadeOutTime = 5.0
+        val fadeInTime = 10.0
+        val fadeOutTime = 10.0
         val alphaInv = clamp(
             (seconds - (duration - fadeOutTime)) / fadeOutTime,
             0.0,

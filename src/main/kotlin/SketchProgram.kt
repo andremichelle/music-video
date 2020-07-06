@@ -1,6 +1,6 @@
-import audio.WavStream
+import draw.FontShape.getShape
 import org.openrndr.application
-import java.nio.file.Paths
+import org.openrndr.math.Vector2
 
 fun main() {
     application {
@@ -9,17 +9,9 @@ fun main() {
             height = 720
         }
         program {
-            test("synth-wave")
-            test("tech-house")
-
+            drawer.shape("some text".getShape("Dialog", Vector2(width / 4.0, height / 2.0)))
             extend {
             }
         }
     }
-}
-
-private fun test(folder: String) {
-    val wavFile = Paths.get("/Users/andre.michelle/Documents/Audiotool/Mixes/$folder/mix.wav").toFile()
-    require(wavFile.exists())
-    println(WavStream.forFile(wavFile))
 }

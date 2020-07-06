@@ -113,6 +113,7 @@ open class WavStream private constructor(
         private const val MAGIC_DS64 = 0x34367364
         private const val MAGIC_WAVE = 0x45564157
         private const val MAGIC_FMT = 0x20746d66
+        private const val MAGIC_JUNK = 0x4B4E554A
         private const val MAGIC_DATA = 0x61746164
 
         fun forFile(file: File): AudioFormat {
@@ -134,6 +135,7 @@ open class WavStream private constructor(
             }
         }
 
+        // https://tech.ebu.ch/docs/tech/tech3306v1_0.pdf
         private fun parseWav64(randomAccessFile: RandomAccessFile, buffer: ByteBuffer): AudioFormat {
             require(buffer.int == -1) { "length must be -1" }
             require(buffer.int == MAGIC_WAVE) { "WAV does not start with WAVE" }
@@ -143,6 +145,7 @@ open class WavStream private constructor(
             buffer.long
             val numFrames = buffer.long
             require(buffer.int == 0) { "Table not implemented" }
+            require(buffer.int == MAGIC_FMT) { "First chunk must be FMT" }
             val header = readHeader(buffer)
             require(buffer.int == MAGIC_DATA) { "Second chunk must be DATA" }
             require(buffer.int == -1) { "data length must be -1" }
@@ -153,16 +156,30 @@ open class WavStream private constructor(
         private fun parseWav(randomAccessFile: RandomAccessFile, buffer: ByteBuffer): AudioFormat {
             buffer.int // file length
             require(buffer.int == MAGIC_WAVE) { "WAV does not start with WAVE" }
-            val header = readHeader(buffer)
-            require(buffer.int == MAGIC_DATA) { "Second chunk must be DATA" }
-            val length = buffer.int.toLong() and 0xFFFFFFFF
-            val numFrames = length / header.blockAlign.toLong()
-            val dataOffset = buffer.position()
-            return WavStream(header, dataOffset, numFrames, randomAccessFile)
+            val chunk = buffer.int
+            if (chunk == MAGIC_FMT) {
+                val header = readHeader(buffer)
+                require(buffer.int == MAGIC_DATA) { "Second chunk must be DATA" }
+                val length = buffer.int.toLong() and 0xFFFFFFFF
+                val numFrames = length / header.blockAlign.toLong()
+                val dataOffset = buffer.position()
+                return WavStream(header, dataOffset, numFrames, randomAccessFile)
+            } else { // we just found a new special treatment that audition introduced for a +4gb file
+                require(chunk == MAGIC_JUNK) { "We expect JUNK here" }
+                require(buffer.int == 28) { "Unknown special 64 format" }
+                for (i in 0.until(8)) {
+                    buffer.int
+                }
+                val header = readHeader(buffer)
+                require(buffer.int == MAGIC_DATA) { "Second chunk must be DATA" }
+                val length = buffer.int.toLong() and 0xFFFFFFFF
+                val numFrames = length / header.blockAlign.toLong()
+                val dataOffset = buffer.position()
+                return WavStream(header, dataOffset, numFrames, randomAccessFile)
+            }
         }
 
         private fun readHeader(buffer: ByteBuffer): WavHeader {
-            require(buffer.int == MAGIC_FMT) { "First chunk must be FMT" }
             require(buffer.int == 16) { "Fmt size does not equal 16" }
             val compression = buffer.short
             val numChannels = buffer.short
