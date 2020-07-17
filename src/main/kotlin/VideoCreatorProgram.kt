@@ -76,11 +76,10 @@ fun main() {
             val estimation = Estimation(window)
             extend {
                 renderer.render(this, if (videoCaptureMode) seconds else audioPlayback.seconds())
-                if (videoCaptureMode) {
-                    estimation.update(seconds / sceneSetup.duration())
-                } else {
+                if (!videoCaptureMode) {
                     drawer.draw(fpsMeter, seconds)
                 }
+                estimation.update(seconds / sceneSetup.duration())
             }
             window.closed.listen {
                 audioPlayback.stop()

@@ -12,9 +12,9 @@ class Estimation(private val window: Program.Window) {
         if (lastPercent != percent) {
             val computationTime = (System.nanoTime() - startTime) / 1000000000.0
             val remaining = (computationTime / progress) - computationTime
-            window.title =
-                "Video recording (${(percent / 1000.0).toInt()}%" +
-                        " remaining: ${formatDuration(remaining.toInt())})"
+            val message = "Video recording (${(percent / 1000.0).toInt()}%" +
+                    " remaining: ${formatDuration(remaining.toInt())})"
+            window.title = message
             lastPercent = percent
         }
     }

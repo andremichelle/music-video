@@ -146,9 +146,9 @@ class EdmScene(
             drawer.clear(ColorRGBa.TRANSPARENT)
             val ranAngle = Random(0xFFF + (bars * 0.5).toInt())
             drawer.pushTransforms()
-            drawer.perspective(90.0, width.toDouble() / height, 0.01, 2000.0)
+            drawer.perspective(120.0, width.toDouble() / height, 0.01, 2000.0)
             drawer.depthWrite = true
-            drawer.lookAt(Vector3(0.0, 0.0, -128.0), Vector3.ZERO, Vector3.UNIT_Y)
+            drawer.lookAt(Vector3(0.0, 0.0, -80.0), Vector3.ZERO, Vector3.UNIT_Y)
             tx = ranAngle.nextDouble(-45.0, 45.0)
             ty = ranAngle.nextDouble(-45.0, 45.0)
             ax += (tx - ax) * 0.04
