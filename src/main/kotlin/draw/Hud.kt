@@ -17,7 +17,7 @@ import kotlin.random.Random
 class Hud {
     companion object {
         fun getTimeMapper(index: Int): (Double) -> Double {
-            return Mappings[index % Mappings.size];
+            return Mappings[index % Mappings.size]
         }
 
         private val Mappings: List<(Double) -> Double> = listOf(
@@ -89,10 +89,33 @@ class Hud {
                 var index = (subTime).toInt() * 3
                 for (section in circle.sections) {
                     this.fill = rgBa.opacify(section.opacity)
-                    section.draw(
-                        this, getTimeMapper(++index)
+                    this.pushTransforms()
+                    this.rotate(
+                        getTimeMapper(++index)
                             (if ((index and 1) == 1) subTime else 1.0 - subTime) * 360.0
                     )
+                    section.draw(this)
+                    this.popTransforms()
+                }
+                circle.end(this)
+            }
+
+            fun Drawer.draw3D(circle: Circle, rgBa: ColorRGBa, time: Double) {
+                circle.begin(this)
+                this.stroke = null
+                val subTime = time * 0.125
+                var index = (subTime).toInt() * 3
+                for (item in circle.sections.withIndex()) {
+                    val section = item.value
+                    val alpha = item.index / (circle.sections.size - 1.0)
+                    this.translate(0.0, 0.0, alpha * abs(sin(subTime * PI)) * -12.0)
+                    this.fill = rgBa
+                    this.pushTransforms()
+                    this.rotate(
+                        getTimeMapper(++index)(if ((index and 1) == 1) subTime else 1.0 - subTime) * 360.0
+                    )
+                    section.draw(this)
+                    this.popTransforms()
                 }
                 circle.end(this)
             }
@@ -103,8 +126,8 @@ class Hud {
         }
 
         private val sections: List<Section> = List(n) { index ->
-            val s = (r1 - r0) / n.toDouble()
-            Section.create(random, index, r0 + index * s, r0 + (index + 1) * s)
+            val s = (r0 - r1) / n.toDouble()
+            Section.create(random, index, r1 + index * s, r1 + (index + 1) * s)
         }
 
         class Section(
@@ -187,12 +210,9 @@ class Hud {
                 shape = Shape(contours)
             }
 
-            fun draw(drawer: Drawer, rotation: Double) {
+            fun draw(drawer: Drawer) {
                 drawer.shadeStyle = conicGradient
-                drawer.pushTransforms()
-                drawer.rotate(rotation)
                 drawer.shape(shape)
-                drawer.popTransforms()
             }
         }
     }

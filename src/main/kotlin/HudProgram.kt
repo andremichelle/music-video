@@ -1,17 +1,11 @@
 import draw.Cross
 import draw.Cross.Companion.draw
 import draw.Hud
-import draw.Hud.Circle.Companion.draw
+import draw.Hud.Circle.Companion.draw3D
 import org.openrndr.application
 import org.openrndr.color.ColorRGBa
-import org.openrndr.draw.colorBuffer
-import org.openrndr.draw.isolatedWithTarget
-import org.openrndr.draw.renderTarget
-import org.openrndr.extra.fx.blur.GaussianBloom
-import org.openrndr.extra.fx.color.ChromaticAberration
 import org.openrndr.ffmpeg.ScreenRecorder
-import org.openrndr.math.mod
-import kotlin.math.*
+import org.openrndr.math.Vector3
 import kotlin.random.Random
 
 fun main() {
@@ -34,49 +28,39 @@ fun main() {
                 }
             }
 
-            val random = Random(0x303808909)
-            val rgBa = ColorRGBa.fromHex(0x41F8FF)
+            val random = Random(0x90808909)
+            val rgBa = ColorRGBa.WHITE//ColorRGBa.fromHex(0x41F8FF)
 
-            val circles: List<Hud.Circle> = List(25) { index ->
-                val c = index % 5
-                val r = index / 5
-                val x = 88 + c * (128 + 16)
-                val y = 88 + r * (128 + 16)
-                Hud.Circle(random, 8 + random.nextInt(5), 16.0, 64.0)
-                    .move(x, y)
+            val numCircles = 1
+            val circle3D: List<Hud.Circle> = List(numCircles) {
+                Hud.Circle(random, 16, 0.0, 128.0)
             }
 
-            val crosses: List<Cross> = List(25) { index ->
-                val c = index % 5
-                val r = index / 5
-                val x = 88 + c * (128 + 16)
-                val y = 88 + r * (128 + 16)
-                Cross(4.0).move(x, y)
-            }
+            var ax = 0.0
+            var ay = 0.0
+            var tx: Double
+            var ty: Double
 
-            val rt = renderTarget(width, height) {
-                colorBuffer()
-                depthBuffer()
-            }
-
-            val blurred = colorBuffer(width, height)
-            val bloom = GaussianBloom()
-            val chromaticAberration = ChromaticAberration()
-            bloom.window = 1
-            bloom.sigma = 20.0
-            bloom.gain = 1.0
             extend {
-                drawer.isolatedWithTarget(rt) {
-                    drawer.clear(ColorRGBa.TRANSPARENT)
-                    drawer.draw(circles, rgBa, seconds * 1.0)
-                    drawer.draw(crosses, rgBa.opacify(0.8))
+                val ranAngle = Random(0xFFF + (seconds * 0.5).toInt())
+                drawer.clear(ColorRGBa.TRANSPARENT)
+                drawer.pushTransforms()
+                drawer.perspective(90.0, width.toDouble() / height, 0.01, 2000.0)
+                drawer.depthWrite = true
+                drawer.lookAt(Vector3(0.0, 0.0, -256.0), Vector3.ZERO, Vector3.UNIT_Y)
+                tx = ranAngle.nextDouble(-45.0, 45.0)
+                ty = ranAngle.nextDouble(-45.0, 45.0)
+                ax += (tx - ax) * 0.04
+                ay += (ty - ay) * 0.04
+                drawer.rotate(Vector3.UNIT_X, ax)
+                drawer.rotate(Vector3.UNIT_Y, ay)
+//                drawer.translate(0.0, 0.0, 256.0)
+                for (index in circle3D.withIndex()) {
+                    drawer.translate(0.0, 0.0, 0.0)
+                    drawer.draw3D(index.value, rgBa, seconds)
                 }
-                bloom.apply(rt.colorBuffer(0), blurred)
-
-                val timedInterval = max(ceil(1.0 - mod(seconds, 8.0)), 0.0)
-                chromaticAberration.aberrationFactor = cos(seconds * PI * 0.5).pow(32.0) * 16.0 * timedInterval
-                chromaticAberration.apply(blurred, blurred)
-                drawer.image(blurred)
+                drawer.draw(listOf(Cross(64.0)), rgBa)
+                drawer.popTransforms()
             }
         }
     }

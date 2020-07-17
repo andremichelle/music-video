@@ -25,7 +25,7 @@ import scene.*
 @Suppress("ConstantConditionIf")
 fun main() {
     val audioPlaybackMode = false
-    val videoCaptureMode = false
+    val videoCaptureMode = true
 
     application {
         configure {
@@ -65,7 +65,7 @@ fun main() {
                 }
 
             @Suppress("USELESS_IS_CHECK") val renderer: SceneRenderer = when (sceneSetup) {
-                is MixSceneSetup -> ImpossibleMission.fromMixScene(sceneSetup, width, height, contentScale)
+                is MixSceneSetup -> EdmScene.fromMixScene(sceneSetup, width, height, contentScale)
                 is TrackSceneSetup -> ImpossibleMission.fromTrackScene(sceneSetup, width, height, contentScale)
                 else -> throw IllegalStateException()
             }
@@ -81,6 +81,9 @@ fun main() {
                 } else {
                     drawer.draw(fpsMeter, seconds)
                 }
+            }
+            window.closed.listen {
+                audioPlayback.stop()
             }
         }
     }
