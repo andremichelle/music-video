@@ -78,7 +78,7 @@ open class WavStream private constructor(
                     ++i
                 }
             } else if (32 == header.bitsPerChannel.toInt()) {
-                val floatBuffer = buffer.slice().asFloatBuffer()
+                val floatBuffer = buffer.asFloatBuffer()
                 while (i < n) {
                     target[i] = floatBuffer[i * header.numChannels + clampChannelIndex]
                     ++i

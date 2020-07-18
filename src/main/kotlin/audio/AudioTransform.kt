@@ -25,10 +25,14 @@ class AudioTransform(
     private var position: Long = 0
 
     fun advance(targetTime: Double) {
-        val targetFrame: Double = secondsToNumFrames(targetTime, format.sampleRate())
-        while (position < targetFrame) {
+        if (0.0 == targetTime) {
             next()
-            position += fftSize
+        } else {
+            val targetFrame: Double = secondsToNumFrames(targetTime, format.sampleRate())
+            while (position < targetFrame) {
+                next()
+                position += fftSize
+            }
         }
     }
 
