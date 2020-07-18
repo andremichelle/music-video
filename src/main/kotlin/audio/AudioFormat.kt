@@ -11,6 +11,8 @@ interface AudioFormat {
 
     fun numChannels(): Int
 
+    fun numFrames(): Long
+
     fun sampleRate(): Int
 
     fun readChannelFloat(target: FloatArray, channelIndex: Int, position: Long)
@@ -23,6 +25,10 @@ class AudioFormatNull : AudioFormat {
     }
 
     override fun numChannels(): Int {
+        return 0
+    }
+
+    override fun numFrames(): Long {
         return 0
     }
 
@@ -97,6 +103,10 @@ open class WavStream private constructor(
 
     override fun numChannels(): Int {
         return header.numChannels.toInt()
+    }
+
+    override fun numFrames(): Long {
+        return numFrames
     }
 
     override fun sampleRate(): Int {

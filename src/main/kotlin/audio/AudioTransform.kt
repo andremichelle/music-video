@@ -25,13 +25,22 @@ class AudioTransform(
     private var position: Long = 0
 
     fun advance(targetTime: Double) {
-        if (0.0 == targetTime) {
-            next()
-        } else {
-            val targetFrame: Double = secondsToNumFrames(targetTime, format.sampleRate())
-            while (position < targetFrame) {
+        when {
+            0.0 == targetTime -> {
                 next()
-                position += fftSize
+            }
+            position + fftSize < format.numFrames() -> {
+                val targetFrame: Double = secondsToNumFrames(targetTime, format.sampleRate())
+                while (position < targetFrame) {
+                    next()
+                    position += fftSize
+                }
+            }
+            else -> {
+                for (channelIndex in 0..1) {
+                    channels[channelIndex].fill(0f)
+                    spectra[channelIndex].fill(0f)
+                }
             }
         }
     }
@@ -40,7 +49,7 @@ class AudioTransform(
         val bins: FloatArray = spectra[channelIndex]
         var binIndex = 1
         for (c in normalized.indices) {
-            val hx = (c + 1) / normalized.size.toDouble()
+            val hx = ((c + 1.0) / normalized.size).pow(8.0)
             val hz: Double = normToFreq(hx)
             val b1 = max(binIndex + 1, ceil(hz / bandWidth).toInt())
             var max = 0.0f
@@ -75,7 +84,7 @@ class AudioTransform(
             for (i in 0 until fftSize) {
                 val value = channel[i]
                 val peak = abs(value)
-                if (peaks[channelIndex] < peak) {
+                if (peaks[channelIndex] < peak && false) {
                     peaks[channelIndex] = peak
                 } else {
                     peaks[channelIndex] = peak + smoothingPeakCoeff * (peaks[channelIndex] - peak)
