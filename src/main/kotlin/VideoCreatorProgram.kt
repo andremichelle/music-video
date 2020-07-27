@@ -24,8 +24,8 @@ import scene.*
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val audioPlaybackMode = true
-    val videoCaptureMode = false
+    val audioPlaybackMode = false
+    val videoCaptureMode = true
 
     application {
         configure {
@@ -34,15 +34,14 @@ fun main() {
             title = if (videoCaptureMode) "Video recording" else "Video Preview"
         }
         program {
+            val sceneSetup: SceneSetup
+            sceneSetup = TrackSceneSetup.zfg71nr7n
+//            sceneSetup = MixSceneSetup.EDM
+
             extend(Screenshots()) {
                 folder = "tmp/"
                 scale = 2.0
             }
-
-            val sceneSetup: SceneSetup
-
-            sceneSetup = MixSceneSetup.EDM
-//            scene = TrackScene.list[0]
 
             val fpsMeter = FPSMeter()
             val contentScale = if (videoCaptureMode) {
@@ -51,7 +50,7 @@ fun main() {
                     outputFile = sceneSetup.mp4OutputPath()
                     quitAfterMaximum = true
                     maximumDuration = sceneSetup.duration()
-                    frameRate = 30
+                    frameRate = sceneSetup.fps()
                     contentScale = 2.0
                 }.contentScale)
             } else {
