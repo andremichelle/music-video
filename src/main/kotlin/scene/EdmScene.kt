@@ -4,12 +4,9 @@ import audio.AudioTransform
 import audio.TempoEvaluator
 import audio.formatDuration
 import audio.normDb
-import draw.Hud
+import draw.*
 import draw.Hud.Circle.Companion.draw
 import draw.Hud.Circle.Companion.draw3D
-import draw.ShaderToy
-import draw.Spectrum
-import draw.Waveform
 import net.Playlist
 import org.openrndr.Program
 import org.openrndr.color.ColorRGBa
@@ -138,7 +135,7 @@ class EdmScene(
         transform.advance(seconds)
         tempoEvaluator.advance(seconds)
 
-        shadertoy?.render(program.window.size * contentScale, seconds, tempoEvaluator.bpm())
+        shadertoy?.render(program.window.size * contentScale, ShaderToyFrame(seconds, tempoEvaluator.bpm(), transform))
 
         val bars = tempoEvaluator.bars()
         drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)

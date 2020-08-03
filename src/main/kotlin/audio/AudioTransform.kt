@@ -1,5 +1,6 @@
 package audio
 
+import org.openrndr.math.clamp
 import kotlin.math.*
 
 class AudioTransform(
@@ -66,6 +67,10 @@ class AudioTransform(
             max = max(peak, max)
         }
         return gainToDb(max)
+    }
+
+    fun peak(): Double {
+        return clamp(dbToNorm(peakDb()), 0.0, 1.0)
     }
 
     fun peakDb(channelIndex: Int): Double {

@@ -1,11 +1,8 @@
 package scene
 
 import audio.*
-import draw.Hud
+import draw.*
 import draw.Hud.Circle.Companion.draw
-import draw.ShaderToy
-import draw.Spectrum
-import draw.Waveform
 import net.Playlist
 import net.TrackApi
 import org.openrndr.Program
@@ -153,7 +150,7 @@ class ImpossibleMission(
         transform.advance(seconds)
         tempoEvaluator.advance(seconds)
 
-        shadertoy?.render(program.window.size * contentScale, seconds, tempoEvaluator.bpm())
+        shadertoy?.render(program.window.size * contentScale, ShaderToyFrame(seconds, tempoEvaluator.bpm(), transform))
 
         val bars = tempoEvaluator.bars()
         drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)

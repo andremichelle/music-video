@@ -38,10 +38,10 @@ class MixSceneSetup(
     @Suppress("unused")
     companion object {
         val EDM = MixSceneSetup("edm", ShaderToy.fromFile("data/shader/the-popular-shader.fs") {
-            timing = { seconds, bpm -> secondsToBars(seconds, bpm) }
+            execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
         }, 0x30609, 0.4)
         val TECHNO = MixSceneSetup("techno", ShaderToy.fromFile("data/shader/day-179.fs") {
-            timing = { seconds, bpm -> secondsToBars(seconds, bpm) * 2.0 }
+            execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
         }, 0x36963, 0.6)
     }
 
@@ -121,18 +121,26 @@ class TrackSceneSetup(
         return 60
     }
 
+    @Suppress("unused")
     companion object {
         val iwd52a2x = TrackSceneSetup(
             "iwd52a2x",
             ShaderToy.fromFile("data/shader/artifact-at-sea.fs") {
-                timing = { seconds, bpm -> secondsToBars(seconds, bpm) * 2.0 }
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
             }, 0x30679, 0.2
         )
         val zfg71nr7n = TrackSceneSetup(
             "zfg71nr7n",
             ShaderToy.fromFile("data/shader/cube-fall.fs") {
-                timing = { seconds, bpm -> secondsToBars(seconds, bpm) / 2.0 }
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
             }, 0x30679, 0.4
+        )
+        val a3j9z52kpc = TrackSceneSetup(
+            "6a3j9z52kpc",
+            ShaderToy.fromFile("data/shader/uplifting.fs") {
+                uniforms = { frame, shader -> shader.uniform("iPeak", 0.5f + frame.transform.peak().toFloat() * 0.5f) }
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
+            }, 0x31679, 0.6
         )
     }
 }

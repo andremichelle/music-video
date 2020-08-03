@@ -1,5 +1,6 @@
 package draw
 
+import audio.AudioTransform
 import org.openrndr.draw.*
 import org.openrndr.internal.Driver
 import org.openrndr.math.Vector2
@@ -7,8 +8,8 @@ import org.openrndr.math.Vector3
 import java.io.File
 
 class ShaderToy(fsCode: String) {
-    var uniforms: (Shader) -> Unit = { Unit }
-    var timing: (Double, Double) -> Double = { seconds, bpm -> seconds }
+    var uniforms: (ShaderToyFrame, Shader) -> Unit = { _, _ -> Unit }
+    var execute: (ShaderToyFrame) -> Double = { frame -> frame.seconds }
 
     companion object {
         fun fromFile(pathname: String, configure: ShaderToy.() -> Unit): ShaderToy {
@@ -84,11 +85,11 @@ class ShaderToy(fsCode: String) {
         shader = Shader.createFromCode(vsCode, pre_fsCode + fsCode + after_fsCode, name = "shadertoy")
     }
 
-    fun render(size: Vector2, seconds: Double, bpm: Double) {
+    fun render(size: Vector2, frame: ShaderToyFrame) {
         shader.begin()
-        shader.uniform("iTime", timing(seconds, bpm).toFloat())
+        shader.uniform("iTime", execute(frame).toFloat())
         shader.uniform("iResolution", size)
-        uniforms(shader)
+        uniforms(frame, shader)
         Driver.instance.drawVertexBuffer(
             shader, listOf(vertexBuffer),
             DrawPrimitive.TRIANGLES, 0, 6
@@ -96,3 +97,5 @@ class ShaderToy(fsCode: String) {
         shader.end()
     }
 }
+
+class ShaderToyFrame(val seconds: Double, val bpm: Double, val transform: AudioTransform)

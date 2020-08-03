@@ -24,7 +24,8 @@ fun main() {
 
             val shaderToy = ShaderToy.fromFile("data/shader/booting.fs") {}
             extend {
-                shaderToy.render(window.size * window.scale, seconds, 120.0)
+                // Null version of ShaderToyFrame?
+//                shaderToy.render(window.size * window.scale, seconds, 120.0)
             }
         }
     }
