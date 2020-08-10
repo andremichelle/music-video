@@ -148,5 +148,11 @@ class TrackSceneSetup(
                 execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
             }, 0x31677, 0.6
         )
+        val nc6fa9gu = TrackSceneSetup(
+            "nc6fa9gu",
+            ShaderToy.fromFile("data/shader/shiny-spheres.fs") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
+            }, 0x3126727, 0.6
+        )
     }
 }

@@ -1,35 +1,5 @@
 // https://www.shadertoy.com/view/4tjBRz
 
-// The MIT License
-// Copyright © 2017 Inigo Quilez
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-// Experimenting with this rendering algorithm, in at attempt to get perfectly antialiased
-// pixels without performing any supersampling.
-//
-// Key ingredients are:
-// 1. analytical sphere to pixel overlap
-//    http://iquilezles.org/www/articles/spherefunctions/spherefunctions.htm
-// 2. analytical surface pattern filtering (ray differentials needed)
-//    http://iquilezles.org/www/articles/morecheckerfiltering/morecheckerfiltering.htm
-// 3. approximate soft shadows with a single ray
-//    http://iquilezles.org/www/articles/sphereshadow/sphereshadow.htm
-
-
-// Algorithm (for eaxh pixel):
-//
-// 1. interesect objects, and record pixel coverage into a list
-// 2. sort list front to back
-// 3. while list contains objects:
-// 4.    shade (with ray differentials for AA)
-// 5.    composite (front to back)
-// 6.    early exit if opaque threshold reached
-// 7. composite with background
-
-
-//-------------------------------------------------------------------------------------------
-
 vec3 sphNormal( in vec3 pos, in vec4 sph )
 {
     return normalize(pos-sph.xyz);
