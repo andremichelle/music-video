@@ -142,5 +142,11 @@ class TrackSceneSetup(
                 execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
             }, 0x31679, 0.6
         )
+        val q8h92m1b58ua = TrackSceneSetup(
+            "q8h92m1b58ua",
+            ShaderToy.fromFile("data/shader/day-179.fs") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
+            }, 0x31677, 0.6
+        )
     }
 }

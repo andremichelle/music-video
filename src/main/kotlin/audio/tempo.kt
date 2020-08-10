@@ -19,7 +19,9 @@ class TempoEvent(
         fun fetch(key: String): List<TempoEvent> {
             val path = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/tempo/${key}.json"
             return try {
-                Json.parse(serializer().list, File(path).readText())
+                val events = Json.parse(serializer().list, File(path).readText())
+                println("Found tempo-automation ${events}")
+                return events
             } catch (throwable: Throwable) {
                 println("Could not find additional tempo-automation. Using default bpm.")
                 emptyList()
@@ -77,7 +79,7 @@ class TempoEvaluator(private val events: List<TempoEvent>, defaultBpm: Double) {
     }
 
     private fun evaluate(bars: Double): Double {
-        return if (curr!!.interpolation == 0 || next == null) {
+        return if (curr!!.interpolation == 0 || curr!!.bars() > bars || next == null) {
             curr!!.value
         } else {
             val ay: Double = curr!!.value
