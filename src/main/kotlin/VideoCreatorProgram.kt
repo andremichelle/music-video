@@ -35,7 +35,7 @@ fun main() {
         }
         program {
             val sceneSetup: SceneSetup
-            sceneSetup = TrackSceneSetup.nc6fa9gu
+            sceneSetup = TrackSceneSetup.x8jyle44daw
 //            sceneSetup = MixSceneSetup.EDM
 
             extend(Screenshots()) {

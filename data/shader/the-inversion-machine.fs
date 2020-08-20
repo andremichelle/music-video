@@ -1,8 +1,11 @@
 // "The Inversion Machine" by Kali
+// https://www.shadertoy.com/view/4dsGD7
 
 const float width=.22;
 const float scale=4.;
 const float detail=.002;
+
+uniform float iPeak;
 
 vec3 lightdir=-vec3(.2,.5,1.);
 
@@ -53,7 +56,7 @@ float raymarch(in vec3 from, in vec3 dir, in vec2 fragCoord)
 	float st,d,col,totdist=st=0.;
 	vec3 p;
 	float ra=rand(uv.xy*iTime)-.5;
-	float ras=max(0.,sign(-.5+rand(vec2(1.3456,.3573)*floor(30.+iTime*20.))));
+	float ras=iPeak;//max(0.,sign(-.5+rand(vec2(1.3456,.3573)*floor(30.+iTime*20.))));
 	float rab=rand(vec2(1.2439,2.3453)*floor(10.+iTime*40.))*ras;
 	float rac=rand(vec2(1.1347,1.0331)*floor(40.+iTime));
 	float ral=rand(1.+floor(uv.yy*300.)*iTime)-.5;
