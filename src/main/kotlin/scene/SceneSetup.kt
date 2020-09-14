@@ -175,5 +175,19 @@ class TrackSceneSetup(
                 execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
             }, 0x311167, 0.3, 30
         )
+        val wccwbqnwt = TrackSceneSetup(
+            "0wccwbqnwt",
+            ShaderToy.fromFile("data/shader/cube-field.glsl") {
+                uniforms = { frame, shader -> shader.uniform("iPeak", frame.transform.peak().toFloat().pow(4f)) }
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+            }, 0x371267, 0.3, 30
+        )
+        val qunkrzyw2 = TrackSceneSetup(
+            "0qunkrzyw2",
+            ShaderToy.fromFile("data/shader/star-nest.glsl") {
+                uniforms = { frame, shader -> shader.uniform("iPeak", frame.transform.peak().toFloat().pow(4f)) }
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 4.0 }
+            }, 0x37117, 0.3, 30
+        )
     }
 }
