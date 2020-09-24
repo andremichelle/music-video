@@ -189,5 +189,17 @@ class TrackSceneSetup(
                 execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 4.0 }
             }, 0x37117, 0.3, 30
         )
+        val dxjrnzp196 = TrackSceneSetup(
+            "dxjrnzp196",
+            ShaderToy.fromFile("data/shader/warped-extruded.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+            }, 0x371de17, 0.2, 30
+        )
+        val rbsxsxamp67p = TrackSceneSetup(
+            "rbsxsxamp67p",
+            ShaderToy.fromFile("data/shader/the-drive-home.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+            }, 0x37ffe17, 0.2, 30
+        )
     }
 }

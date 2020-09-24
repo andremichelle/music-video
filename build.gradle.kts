@@ -94,10 +94,10 @@ val kotlinVersion = "1.3.72"
 
 plugins {
     java
-    kotlin("jvm") version ("1.3.72")
+    kotlin("jvm") version("1.3.72")
     kotlin("plugin.serialization") version "1.3.70"
-    id("com.github.johnrengelman.shadow") version ("5.2.0")
-    id("org.beryx.runtime") version ("1.8.1")
+    id("com.github.johnrengelman.shadow") version ("6.0.0")
+    id("org.beryx.runtime") version ("1.9.1")
 }
 
 repositories {
