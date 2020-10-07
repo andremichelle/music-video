@@ -201,5 +201,29 @@ class TrackSceneSetup(
                 execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
             }, 0x37ffe17, 0.2, 30
         )
+        val ueutd1g771 = TrackSceneSetup(
+            "ueutd1g771",
+            ShaderToy.fromFile("data/shader/moist.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+            }, 0x37ffe11, 0.1, 30
+        )
+        val family = TrackSceneSetup(
+            "family",
+            ShaderToy.fromFile("data/shader/happy-planet.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+            }, 0x37ffe08, 0.1, 30
+        )
+        val juetpcaxn4 = TrackSceneSetup(
+            "51juetpcaxn4",
+            ShaderToy.fromFile("data/shader/clouds.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+            }, 0x37fe08, 0.1, 30
+        )
+        val wgwb2u5cbfh = TrackSceneSetup(
+            "wgwb2u5cbfh",
+            ShaderToy.fromFile("data/shader/generators.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+            }, 0x7fe08, 0.1, 30
+        )
     }
 }
