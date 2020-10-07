@@ -225,5 +225,11 @@ class TrackSceneSetup(
                 execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
             }, 0x7fe08, 0.1, 30
         )
+        val saloxcs2nlydijtz90yxlfyubd6z5im = TrackSceneSetup(
+            "saloxcs2nlydijtz90yxlfyubd6z5im",
+            ShaderToy.fromFile("data/shader/sweeper.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
+            }, 0x7de0a8, 0.4, 30
+        )
     }
 }
