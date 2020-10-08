@@ -52,6 +52,7 @@ class ShaderToy(fsCode: String) {
             in vec4 gl_FragCoord;
             out vec4 o_output;
             uniform float iTime;
+            uniform int iFrame;
             uniform vec2 iResolution;
         """
 
@@ -80,6 +81,7 @@ class ShaderToy(fsCode: String) {
     }
 
     private val shader: Shader
+    private var frameIndex: Int = 0
 
     init {
         shader = Shader.createFromCode(vsCode, pre_fsCode + fsCode + after_fsCode, name = "shadertoy")
@@ -88,6 +90,7 @@ class ShaderToy(fsCode: String) {
     fun render(size: Vector2, frame: ShaderToyFrame) {
         shader.begin()
         shader.uniform("iTime", execute(frame).toFloat())
+        shader.uniform("iFrame", frameIndex++)
         shader.uniform("iResolution", size)
         uniforms(frame, shader)
         Driver.instance.drawVertexBuffer(

@@ -231,5 +231,23 @@ class TrackSceneSetup(
                 execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
             }, 0x7de0a8, 0.4, 30
         )
+        val iucid = TrackSceneSetup(
+            "iucid",
+            ShaderToy.fromFile("data/shader/abstract-terrain-objects.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+            }, 0x7de0a2, 0.3, 30
+        )
+        val timestopper = TrackSceneSetup(
+            "timestopper",
+            ShaderToy.fromFile("data/shader/messenger.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
+            }, 0xfde0f2, 0.4, 30
+        )
+        val the_samuari_s_theme = TrackSceneSetup(
+            "the_samuari_s_theme",
+            ShaderToy.fromFile("data/shader/happy-jumping.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
+            }, 0xfae0f2, 0.2, 30
+        )
     }
 }

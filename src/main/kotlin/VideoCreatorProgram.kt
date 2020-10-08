@@ -21,6 +21,7 @@ import scene.*
 // Allow to place shadertoy arbitrary on stage
 // flying hexagons
 // special chars not rendered
+// Bubbles > https://www.shadertoy.com/view/4dl3zn
 
 @Suppress("ConstantConditionIf")
 fun main() {
@@ -35,7 +36,7 @@ fun main() {
         }
         program {
             val sceneSetup: SceneSetup
-            sceneSetup = TrackSceneSetup.saloxcs2nlydijtz90yxlfyubd6z5im
+            sceneSetup = TrackSceneSetup.the_samuari_s_theme
 //            sceneSetup = MixSceneSetup.EDM
 
             extend(Screenshots()) {
