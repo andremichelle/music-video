@@ -36,7 +36,7 @@ fun main() {
         }
         program {
             val sceneSetup: SceneSetup
-            sceneSetup = TrackSceneSetup.the_samuari_s_theme
+            sceneSetup = TrackSceneSetup.w28k1c9l
 //            sceneSetup = MixSceneSetup.EDM
 
             extend(Screenshots()) {

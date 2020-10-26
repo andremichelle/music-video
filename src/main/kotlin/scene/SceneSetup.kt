@@ -249,5 +249,11 @@ class TrackSceneSetup(
                 execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
             }, 0xfae0f2, 0.2, 30
         )
+        val w28k1c9l = TrackSceneSetup(
+            "w28k1c9l",
+            ShaderToy.fromFile("data/shader/inercia.glsl") {
+                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 1.0 }
+            }, 0xfae0fe, 0.5, 30
+        )
     }
 }
