@@ -39,10 +39,10 @@ class MixSceneSetup(
     @Suppress("unused")
     companion object {
         val EDM = MixSceneSetup("edm", ShaderToy.fromFile("data/shader/the-popular-shader.fs") {
-            execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+            execute = { frame -> frame.bars }
         }, 0x30609, 0.4)
         val TECHNO = MixSceneSetup("techno", ShaderToy.fromFile("data/shader/day-179.fs") {
-            execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
+            execute = { frame -> frame.bars * 2.0 }
         }, 0x36963, 0.6)
     }
 
@@ -128,131 +128,131 @@ class TrackSceneSetup(
         val iwd52a2x = TrackSceneSetup(
             "iwd52a2x",
             ShaderToy.fromFile("data/shader/artifact-at-sea.fs") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
+                execute = { frame -> frame.bars * 2.0 }
             }, 0x30679, 0.2, 60
         )
         val zfg71nr7n = TrackSceneSetup(
             "zfg71nr7n",
             ShaderToy.fromFile("data/shader/cube-fall.fs") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
+                execute = { frame -> frame.bars / 2.0 }
             }, 0x30679, 0.4, 60
         )
         val a3j9z52kpc = TrackSceneSetup(
             "6a3j9z52kpc",
             ShaderToy.fromFile("data/shader/uplifting.fs") {
                 uniforms = { frame, shader -> shader.uniform("iPeak", 0.5f + frame.transform.peak().toFloat() * 0.5f) }
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
+                execute = { frame -> frame.bars / 2.0 }
             }, 0x31679, 0.6, 60
         )
         val q8h92m1b58ua = TrackSceneSetup(
             "q8h92m1b58ua",
             ShaderToy.fromFile("data/shader/day-179.fs") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
+                execute = { frame -> frame.bars / 2.0 }
             }, 0x31677, 0.6, 60
         )
         val nc6fa9gu = TrackSceneSetup(
             "nc6fa9gu",
             ShaderToy.fromFile("data/shader/shiny-spheres.fs") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
+                execute = { frame -> frame.bars / 2.0 }
             }, 0x3126727, 0.6, 60
         )
         val meqj2bteuqtg = TrackSceneSetup(
             "meqj2bteuqtg",
             ShaderToy.fromFile("data/shader/corridor.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) / 2.0 }
+                execute = { frame -> frame.bars / 2.0 }
             }, 0x31267, 0.4, 60
         )
         val qr2d96umic = TrackSceneSetup(
             "5qr2d96umic",
             ShaderToy.fromFile("data/shader/tokio.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+                execute = { frame -> frame.bars }
             }, 0x3112267, 0.2, 60
         )
         val x8jyle44daw = TrackSceneSetup(
             "x8jyle44daw",
             ShaderToy.fromFile("data/shader/the-inversion-machine.fs") {
                 uniforms = { frame, shader -> shader.uniform("iPeak", frame.transform.peak().toFloat().pow(4f)) }
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+                execute = { frame -> frame.bars }
             }, 0x311167, 0.3, 30
         )
         val wccwbqnwt = TrackSceneSetup(
             "0wccwbqnwt",
             ShaderToy.fromFile("data/shader/cube-field.glsl") {
                 uniforms = { frame, shader -> shader.uniform("iPeak", frame.transform.peak().toFloat().pow(4f)) }
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+                execute = { frame -> frame.bars }
             }, 0x371267, 0.3, 30
         )
         val qunkrzyw2 = TrackSceneSetup(
             "0qunkrzyw2",
             ShaderToy.fromFile("data/shader/star-nest.glsl") {
                 uniforms = { frame, shader -> shader.uniform("iPeak", frame.transform.peak().toFloat().pow(4f)) }
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 4.0 }
+                execute = { frame -> frame.bars * 4.0 }
             }, 0x37117, 0.3, 30
         )
         val dxjrnzp196 = TrackSceneSetup(
             "dxjrnzp196",
             ShaderToy.fromFile("data/shader/warped-extruded.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+                execute = { frame -> frame.bars * 0.5 }
             }, 0x371de17, 0.2, 30
         )
         val rbsxsxamp67p = TrackSceneSetup(
             "rbsxsxamp67p",
             ShaderToy.fromFile("data/shader/the-drive-home.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+                execute = { frame -> frame.bars * 0.5 }
             }, 0x37ffe17, 0.2, 30
         )
         val ueutd1g771 = TrackSceneSetup(
             "ueutd1g771",
             ShaderToy.fromFile("data/shader/moist.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+                execute = { frame -> frame.bars * 0.5 }
             }, 0x37ffe11, 0.1, 30
         )
         val family = TrackSceneSetup(
             "family",
             ShaderToy.fromFile("data/shader/happy-planet.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+                execute = { frame -> frame.bars }
             }, 0x37ffe08, 0.1, 30
         )
         val juetpcaxn4 = TrackSceneSetup(
             "51juetpcaxn4",
             ShaderToy.fromFile("data/shader/clouds.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+                execute = { frame -> frame.bars * 0.5 }
             }, 0x37fe08, 0.1, 30
         )
         val wgwb2u5cbfh = TrackSceneSetup(
             "wgwb2u5cbfh",
             ShaderToy.fromFile("data/shader/generators.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 0.5 }
+                execute = { frame -> frame.bars * 0.5 }
             }, 0x7fe08, 0.1, 30
         )
         val saloxcs2nlydijtz90yxlfyubd6z5im = TrackSceneSetup(
             "saloxcs2nlydijtz90yxlfyubd6z5im",
             ShaderToy.fromFile("data/shader/sweeper.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
+                execute = { frame -> frame.bars * 2.0 }
             }, 0x7de0a8, 0.4, 30
         )
         val iucid = TrackSceneSetup(
             "iucid",
             ShaderToy.fromFile("data/shader/abstract-terrain-objects.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) }
+                execute = { frame -> frame.bars }
             }, 0x7de0a2, 0.3, 30
         )
         val timestopper = TrackSceneSetup(
             "timestopper",
             ShaderToy.fromFile("data/shader/messenger.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
+                execute = { frame -> frame.bars * 2.0 }
             }, 0xfde0f2, 0.4, 30
         )
         val the_samuari_s_theme = TrackSceneSetup(
             "the_samuari_s_theme",
             ShaderToy.fromFile("data/shader/happy-jumping.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 2.0 }
+                execute = { frame -> frame.bars * 2.0 }
             }, 0xfae0f2, 0.2, 30
         )
         val w28k1c9l = TrackSceneSetup(
             "w28k1c9l",
             ShaderToy.fromFile("data/shader/inercia.glsl") {
-                execute = { frame -> secondsToBars(frame.seconds, frame.bpm) * 1.0 }
+                execute = { frame -> frame.bars * 1.0 }
             }, 0xfae0fe, 0.5, 30
         )
     }

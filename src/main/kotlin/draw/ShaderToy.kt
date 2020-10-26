@@ -101,4 +101,4 @@ class ShaderToy(fsCode: String) {
     }
 }
 
-class ShaderToyFrame(val seconds: Double, val bpm: Double, val transform: AudioTransform)
+class ShaderToyFrame(val seconds: Double, val bars: Double, val transform: AudioTransform)

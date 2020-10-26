@@ -150,7 +150,7 @@ class ImpossibleMission(
         transform.advance(seconds)
         tempoEvaluator.advance(seconds)
 
-        shadertoy?.render(program.window.size * contentScale, ShaderToyFrame(seconds, tempoEvaluator.bpm(), transform))
+        shadertoy?.render(program.window.size * contentScale, ShaderToyFrame(seconds, tempoEvaluator.bars(), transform))
 
         val bars = tempoEvaluator.bars()
         drawer.image(atl, (width - atl.width * 0.125) - 8.0, 8.0, atl.width * 0.125, atl.height * 0.125)
