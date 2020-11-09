@@ -54,7 +54,7 @@ val openrndrFeatures = setOf(
 
 /*  Which version of OPENRNDR and ORX should be used? */
 val openrndrUseSnapshot = false
-val openrndrVersion = if (openrndrUseSnapshot) "0.4.0-SNAPSHOT" else "0.3.43"
+val openrndrVersion = if (openrndrUseSnapshot) "0.4.0-SNAPSHOT " else "0.3.43"
 
 val orxUseSnapshot = false
 val orxVersion = if (orxUseSnapshot) "0.4.0-SNAPSHOT" else "0.3.51"

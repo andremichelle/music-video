@@ -255,5 +255,17 @@ class TrackSceneSetup(
                 execute = { frame -> frame.bars * 1.0 }
             }, 0xfae0fe, 0.5, 30
         )
+        val ia9g13stx = TrackSceneSetup( // BROKEN MIXDOWN - NOT RELEASED YET
+            "ia9g13stx",
+            ShaderToy.fromFile("data/shader/silexars.glsl") {
+                execute = { frame -> frame.bars * 1.0 }
+            }, 0xf22fe, 0.5, 30
+        )
+        val fwbse4jk2dq = TrackSceneSetup(
+            "3fwbse4jk2dq",
+            ShaderToy.fromFile("data/shader/flythrough.glsl") {
+                execute = { frame -> frame.bars * 0.5 }
+            }, 0xf22fe, 0.3, 30
+        )
     }
 }

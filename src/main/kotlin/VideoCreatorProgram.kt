@@ -25,7 +25,7 @@ import scene.*
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val videoCaptureMode = false
+    val videoCaptureMode = true
     val audioPlaybackMode = !videoCaptureMode
 
     application {
@@ -36,7 +36,7 @@ fun main() {
         }
         program {
             val sceneSetup: SceneSetup
-            sceneSetup = TrackSceneSetup.w28k1c9l
+            sceneSetup = TrackSceneSetup.fwbse4jk2dq
 //            sceneSetup = MixSceneSetup.EDM
 
             extend(Screenshots()) {
