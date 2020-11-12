@@ -3,7 +3,7 @@ package scene
 import audio.AudioFormat
 import audio.AudioTransform
 import audio.WavStream
-import audio.secondsToBars
+import audio.normDb
 import draw.ShaderToy
 import net.Playlist
 import java.nio.file.Path
@@ -261,11 +261,28 @@ class TrackSceneSetup(
                 execute = { frame -> frame.bars * 1.0 }
             }, 0xf22fe, 0.5, 30
         )
+        val khwnednc6 = TrackSceneSetup( // BROKEN MIXDOWN - NOT RELEASED YET
+            "khwnednc6",
+            ShaderToy.fromFile("data/shader/silexars.glsl") {
+                execute = { frame -> frame.bars }
+            }, 0xf2fe, 0.3, 30
+        )
         val fwbse4jk2dq = TrackSceneSetup(
             "3fwbse4jk2dq",
             ShaderToy.fromFile("data/shader/flythrough.glsl") {
                 execute = { frame -> frame.bars * 0.5 }
             }, 0xf22fe, 0.3, 30
+        )
+        var normDb = normDb(-36.0, -6.0);
+        val wb8av7v2wp = TrackSceneSetup(
+            "wb8av7v2wp",
+            ShaderToy.fromFile("data/shader/thepheer.glsl") {
+                uniforms = { frame, shader ->
+                    shader.uniform("lPeak", normDb.invoke(frame.transform.peakDb(0)).toFloat())
+                    shader.uniform("rPeak", normDb.invoke(frame.transform.peakDb(1)).toFloat())
+                }
+                execute = { frame -> frame.bars }
+            }, 0xf22fff, 0.3, 30
         )
     }
 }
