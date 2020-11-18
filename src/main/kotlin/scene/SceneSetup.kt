@@ -64,8 +64,10 @@ class MixSceneSetup(
 
     override fun printMuxCommand() {
         println(
-            "ffmpeg -i ${Paths.get("tmp/${folder}.mp4")
-                .toAbsolutePath()} -i ${wavPath.toAbsolutePath()} -c copy tmp/${folder}.mkv"
+            "ffmpeg -i ${
+                Paths.get("tmp/${folder}.mp4")
+                    .toAbsolutePath()
+            } -i ${wavPath.toAbsolutePath()} -c copy tmp/${folder}.mkv"
         )
     }
 
@@ -106,8 +108,10 @@ class TrackSceneSetup(
 
     override fun printMuxCommand() {
         println(
-            "ffmpeg -i ${Paths.get("tmp/${trackKey}.mp4")
-                .toAbsolutePath()} -i ${wavPath.toAbsolutePath()} -c copy tmp/${trackKey}.mkv"
+            "ffmpeg -i ${
+                Paths.get("tmp/${trackKey}.mp4")
+                    .toAbsolutePath()
+            } -i ${wavPath.toAbsolutePath()} -c copy tmp/${trackKey}.mkv"
         )
     }
 
@@ -273,16 +277,25 @@ class TrackSceneSetup(
                 execute = { frame -> frame.bars * 0.5 }
             }, 0xf22fe, 0.3, 30
         )
-        var normDb = normDb(-36.0, -6.0);
         val wb8av7v2wp = TrackSceneSetup(
             "wb8av7v2wp",
             ShaderToy.fromFile("data/shader/thepheer.glsl") {
+                val normDb = normDb(-36.0, -6.0)
                 uniforms = { frame, shader ->
                     shader.uniform("lPeak", normDb.invoke(frame.transform.peakDb(0)).toFloat())
                     shader.uniform("rPeak", normDb.invoke(frame.transform.peakDb(1)).toFloat())
                 }
                 execute = { frame -> frame.bars }
             }, 0xf22fff, 0.3, 30
+        )
+        val njmd4gdeo = TrackSceneSetup(
+            "njmd4gdeo",
+            ShaderToy.fromFile("data/shader/synthwave.glsl") {
+                uniforms = { frame, shader ->
+                    shader.uniform("peak", frame.transform.peak().toFloat())
+                }
+                execute = { frame -> frame.bars * 3.0 }
+            }, 0xfea22fe, 0.5, 30
         )
     }
 }
