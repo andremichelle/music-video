@@ -297,5 +297,22 @@ class TrackSceneSetup(
                 execute = { frame -> frame.bars * 3.0 }
             }, 0xfea22fe, 0.5, 30
         )
+        val my1v82hik2 = TrackSceneSetup(
+            "2my1v82hik2",
+            ShaderToy.fromFile("data/shader/feast.glsl") {
+                val normDb = normDb(-36.0, -3.0)
+                uniforms = { frame, shader ->
+                    shader.uniform("lPeak", normDb.invoke(frame.transform.peakDb(0)).toFloat())
+                    shader.uniform("rPeak", normDb.invoke(frame.transform.peakDb(1)).toFloat())
+                }
+                execute = { frame -> frame.bars * 4.0 }
+            }, 0xfeae2fe, 0.2, 30
+        )
+        val lxrtaavx9 = TrackSceneSetup(
+            "lxrtaavx9",
+            ShaderToy.fromFile("data/shader/day-376.glsl") {
+                execute = { frame -> frame.bars * 2.0 }
+            }, 0xffbe2fe, 0.4, 30
+        )
     }
 }
