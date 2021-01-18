@@ -25,7 +25,7 @@ import scene.*
 
 @Suppress("ConstantConditionIf")
 fun main() {
-    val videoCaptureMode = false
+    val videoCaptureMode = true
     val audioPlaybackMode = !videoCaptureMode
 
     application {

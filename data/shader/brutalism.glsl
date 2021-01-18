@@ -70,10 +70,10 @@ vec4 texNoise(vec2 n) {
 void mainImage(out vec4 fragColor, in vec2 fragCoord)//2 lines above are a = ambient occlusion and s = sub surface scattering
 {
     vec2 uv=(fragCoord.xy/iResolution.xy-0.5)/vec2(iResolution.y/iResolution.x, 1);//get UVs
-    tt=mod(iTime, 59.66)+4.72;//modulo time to avoid glitchy artifact and also nicely reset camera / scene
-    vec3 lp=vec3(3.+cos(tt*.2)*10., 6.+sin(tt*.4)*0.5, -10), //light position
+    tt=mod(iTime-0.5, 64.0)*3.1415926536;//modulo time to avoid glitchy artifact and also nicely reset camera / scene
+    vec3 lp=vec3(3.+cos(tt*.25)*10., 6.+sin(tt*.5)*0.5, -10), //light position
     ro=lp*mix(vec3(1), vec3(-1, 2.2, 1), ceil(cos(tt))), // ray origin = camera position
-    cw=normalize(vec3(sin(tt*.4)*2., cos(tt*.2)*10., 0)-ro), //camera forward vector
+    cw=normalize(vec3(sin(tt*.5)*2., cos(tt*.25)*10., 0)-ro), //camera forward vector
     cu=normalize(cross(cw, vec3(0, 1, 0))), //camera left vector ?
     cv=normalize(cross(cu, cw)), //camera up vector ?
     rd=mat3(cu, cv, cw)*normalize(vec3(uv, .5)), co, fo;//ray direction
