@@ -4,7 +4,6 @@ import org.openrndr.math.Vector2
 import org.openrndr.shape.Segment
 import org.openrndr.shape.Shape
 import org.openrndr.shape.ShapeContour
-import org.slf4j.LoggerFactory
 import java.awt.Font
 import java.awt.font.FontRenderContext
 import java.awt.font.TextLayout
@@ -17,8 +16,6 @@ import java.net.URL
 typealias JShape = java.awt.Shape
 
 object FontShape {
-    val logger = LoggerFactory.getLogger(FontShape::class.java)
-
     fun String.getShape(fontName: String, from: Vector2, fontSize: Double = 128.0): Shape {
         val stream = try {
             fontName.asResource()?.openStream()
@@ -50,12 +47,10 @@ object FontShape {
             var segment: Segment? = null
             when (iterator.currentSegment(coordinates)) {
                 PathIterator.SEG_CLOSE -> {
-                    logger.info("SEG_CLOSE")
                     contours.add(ShapeContour(segments.toList(), true))
                     segments.clear()
                 }
                 PathIterator.SEG_QUADTO -> {
-                    logger.info("SEG_QUADTO")
                     val x1 = coordinates[0]
                     val y1 = coordinates[1]
                     val x2 = coordinates[2]
@@ -65,7 +60,6 @@ object FontShape {
                     segment = Segment(start = cursor, c0 = Vector2(x1, y1), end = Vector2(x2, y2))
                 }
                 PathIterator.SEG_CUBICTO -> {
-                    logger.info("SEG_CUBICTO")
                     val x1 = coordinates[0]
                     val y1 = coordinates[1]
                     val x2 = coordinates[2]
@@ -77,7 +71,6 @@ object FontShape {
                     segment = Segment(start = cursor, c0 = Vector2(x1, y1), c1 = Vector2(x2, y2), end = Vector2(x3, y3))
                 }
                 PathIterator.SEG_LINETO -> {
-                    logger.info("SEG_LINETO")
                     val x1 = coordinates[0]
                     val y1 = coordinates[1]
                     x = x1
@@ -85,7 +78,6 @@ object FontShape {
                     segment = Segment(start = cursor, end = Vector2(x1, y1))
                 }
                 PathIterator.SEG_MOVETO -> {
-                    logger.info("SEG_MOVETO")
                     val x1 = coordinates[0]
                     val y1 = coordinates[1]
                     x = x1

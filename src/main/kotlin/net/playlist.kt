@@ -4,14 +4,12 @@ package net
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonConfiguration
 import java.io.File
 import java.net.URL
 
 @Serializable
-@OptIn(UnstableDefault::class)
 class Playlist(val tracks: List<Track>, val bpm: Double, val duration: Double) {
     @Serializable
     class Track(
@@ -57,7 +55,7 @@ class Playlist(val tracks: List<Track>, val bpm: Double, val duration: Double) {
     companion object {
         fun fetch(folder: String): Playlist {
             val path = "/Users/andre.michelle/Documents/Audiotool/Mixes/${folder}/playlist.json"
-            return Json(JsonConfiguration(ignoreUnknownKeys = true)).parse(serializer(), File(path).readText())
+            return Json.decodeFromString(serializer(), File(path).readText())
         }
     }
 

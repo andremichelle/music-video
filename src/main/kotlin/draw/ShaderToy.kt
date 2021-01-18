@@ -84,7 +84,7 @@ class ShaderToy(fsCode: String) {
     private var frameIndex: Int = 0
 
     init {
-        shader = Shader.createFromCode(vsCode, pre_fsCode + fsCode + after_fsCode, name = "shadertoy")
+        shader = Shader.createFromCode(vsCode = vsCode, fsCode = pre_fsCode + fsCode + after_fsCode, name = "shadertoy")
     }
 
     fun render(size: Vector2, frame: ShaderToyFrame) {

@@ -1,9 +1,11 @@
 package audio
 
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
+import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.list
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.parse
 import java.io.File
 
 @Serializable
@@ -14,12 +16,11 @@ class TempoEvent(
     val value: Double,
     val slope: Double
 ) {
-    @OptIn(UnstableDefault::class)
     companion object {
         fun fetch(key: String): List<TempoEvent> {
             val path = "/Users/andre.michelle/Documents/Audiotool/Mixes/cache/tempo/${key}.json"
             return try {
-                val events = Json.parse(serializer().list, File(path).readText())
+                val events: List<TempoEvent> = Json.decodeFromString( ListSerializer(serializer()),  File(path).readText())
                 println("Found tempo-automation ${events}")
                 return events
             } catch (throwable: Throwable) {

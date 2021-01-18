@@ -2,12 +2,10 @@ package net
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.UnstableDefault
 import kotlinx.serialization.json.Json
 import java.net.URL
 
 @Suppress("unused")
-@OptIn(UnstableDefault::class)
 class TrackApi {
     @Serializable
     class User(
@@ -60,7 +58,7 @@ class TrackApi {
     companion object {
         fun fetch(key: String): Response {
             return try {
-                Json.parse(Response.serializer(), URL("https://api.audiotool.com/track/$key.json").readText())
+                Json.decodeFromString(Response.serializer(), URL("https://api.audiotool.com/track/$key.json").readText())
             } catch (throwable: Throwable) {
                 Response(
                     Track(
