@@ -314,5 +314,11 @@ class TrackSceneSetup(
                 execute = { frame -> frame.bars * 2.0 }
             }, 0xffbe2fe, 0.4, 30
         )
+        val enu06g1 = TrackSceneSetup(
+            "1enu06g1",
+            ShaderToy.fromFile("data/shader/brutalism.glsl") {
+                execute = { frame -> frame.bars * 2.0 }
+            }, 0xffbe2fe, 0.4, 30
+        )
     }
 }
