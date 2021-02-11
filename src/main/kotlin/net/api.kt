@@ -42,7 +42,7 @@ class TrackApi {
         fun authors(): String {
             val regex = Regex("[^A-Za-z0-9 ]")
             val string = collaborators.joinToString { it.name }
-            return regex.replace(string, "").trim()
+            return regex.replace(string.replace("é", "e"), "").trim()
         }
     }
 

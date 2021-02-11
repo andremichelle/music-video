@@ -320,5 +320,56 @@ class TrackSceneSetup(
                 execute = { frame -> frame.bars * 0.5 }
             }, 0xffbbcfe, 0.6, 30
         )
+        val yielding = TrackSceneSetup(
+            "yielding",
+            ShaderToy.fromFile("data/shader/misty-grid.glsl") {
+                val freqs = FloatArray(8)
+                val map = { v: Float -> v }
+                uniforms = { frame, shader ->
+                    frame.transform.energySmoothing(0.07)
+                    frame.transform.mapSpectrum(freqs, 0)
+                    shader.uniform("fa", map(freqs[0]))
+                    shader.uniform("fb", map(freqs[4]))
+                    shader.uniform("fc", map(freqs[7]))
+                }
+                execute = { frame -> frame.bars * 0.5 }
+            }, 0xf982fe, 0.3, 30
+        )
+        val srpu3c7y = TrackSceneSetup(
+            "srpu3c7y",
+            ShaderToy.fromFile("data/shader/cross-galactic.glsl") {
+                execute = { frame -> frame.bars * 2.0 }
+            }, 0xffb89fe, 0.6, 30
+        )
+        val yz3hy4ki = TrackSceneSetup( // TODO
+            "0yz3hy4ki",
+            ShaderToy.fromFile("data/shader/blurry-spheres.glsl") {
+                val normDb = normDb(-24.0, -0.0)
+                uniforms = { frame, shader ->
+                    shader.uniform("peak", normDb.invoke(frame.transform.peakDb()))
+                }
+                execute = { frame -> frame.bars }
+            }, 0xebb29fe, 0.3, 30
+        )
+        val fcolgyxh4nka = TrackSceneSetup(
+            "fcolgyxh4nka",
+            ShaderToy.fromFile("data/shader/appolian.glsl") {
+                val normDb = normDb(-18.0, -3.0)
+                uniforms = { frame, shader ->
+                    shader.uniform("peak", normDb.invoke(frame.transform.peakDb()))
+                }
+                execute = { frame -> frame.bars * 0.5 }
+            }, 0xebb19fe, 0.3, 30
+        )
+        val dxaws6g36uu6 = TrackSceneSetup(
+            "dxaws6g36uu6",
+            ShaderToy.fromFile("data/shader/galaxy-bubble.glsl") {
+                val normDb = normDb(-24.0, -6.0)
+                uniforms = { frame, shader ->
+                    shader.uniform("peak", normDb.invoke(frame.transform.peakDb()))
+                }
+                execute = { frame -> frame.bars * 0.5 }
+            }, 0xebab1fe, 0.1, 30
+        )
     }
 }

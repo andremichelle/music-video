@@ -21,9 +21,13 @@ class AudioTransform(
     private val window: FloatArray = FloatArray(fftSize)
     private val peaks = FloatArray(2)
     private val smoothingPeakCoeff = exp(-1.0 / (fps * 20.0)).toFloat() // 20000ms release-time
-    private val smoothingEnergyCoeff = exp(-1.0 / (fps * 0.02)).toFloat() // 20ms release-time
+    private var smoothingEnergyCoeff = exp(-1.0 / (fps * 0.02)).toFloat() // 20ms release-time
 
     private var position: Long = 0
+
+    fun energySmoothing(seconds: Double) {
+        smoothingEnergyCoeff = exp(-1.0 / (fps * seconds)).toFloat()
+    }
 
     fun advance(targetTime: Double) {
         when {
@@ -89,7 +93,7 @@ class AudioTransform(
             for (i in 0 until fftSize) {
                 val value = channel[i]
                 val peak = abs(value)
-                if (peaks[channelIndex] < peak && false) {
+                if (peaks[channelIndex] < peak) {
                     peaks[channelIndex] = peak
                 } else {
                     peaks[channelIndex] = peak + smoothingPeakCoeff * (peaks[channelIndex] - peak)
