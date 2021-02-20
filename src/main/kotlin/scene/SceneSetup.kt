@@ -371,5 +371,15 @@ class TrackSceneSetup(
                 execute = { frame -> frame.bars * 0.5 }
             }, 0xebab1fe, 0.1, 30
         )
+        val b41sqwa02v1 = TrackSceneSetup(
+            "b41sqwa02v1",
+            ShaderToy.fromFile("data/shader/prism-liquid.glsl") {
+                val normDb = normDb(-24.0, -6.0)
+                uniforms = { frame, shader ->
+                    shader.uniform("peak", normDb.invoke(frame.transform.peakDb()))
+                }
+                execute = { frame -> frame.bars * 0.5 }
+            }, 0xebdf1fe, 0.2, 30
+        )
     }
 }
