@@ -8,7 +8,7 @@ import org.openrndr.math.Vector3
 import java.io.File
 
 class ShaderToy(fsCode: String) {
-    var uniforms: (ShaderToyFrame, Shader) -> Unit = { _, _ -> Unit }
+    var uniforms: (ShaderToyFrame, Shader) -> Unit = { _, _ -> }
     var execute: (ShaderToyFrame) -> Double = { frame -> frame.seconds }
 
     companion object {

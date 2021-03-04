@@ -381,5 +381,25 @@ class TrackSceneSetup(
                 execute = { frame -> frame.bars * 0.5 }
             }, 0xebdf1fe, 0.2, 30
         )
+        val chma81o9x = TrackSceneSetup(
+            "chma81o9x",
+            ShaderToy.fromFile("data/shader/blackpool.glsl") {
+                val normDb = normDb(-24.0, -6.0)
+                uniforms = { frame, shader ->
+                    shader.uniform("peak", normDb.invoke(frame.transform.peakDb()))
+                }
+                execute = { frame -> frame.bars * 2.0 }
+            }, 0xebfe, 0.5, 30
+        )
+        val pgysztjd = TrackSceneSetup(
+            "465pgysztjd",
+            ShaderToy.fromFile("data/shader/flight-viz.glsl") {
+                val normDb = normDb(-12.0, 0.0)
+                uniforms = { frame, shader ->
+                    shader.uniform("peak", normDb.invoke(frame.transform.peakDb()))
+                }
+                execute = { frame -> frame.bars * 2.0 }
+            }, 0xebeafe, 0.5, 30
+        )
     }
 }

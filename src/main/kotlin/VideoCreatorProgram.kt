@@ -23,6 +23,10 @@ import scene.*
 // special chars not rendered
 // Bubbles > https://www.shadertoy.com/view/4dl3zn
 
+// NEXT
+// https://www.shadertoy.com/view/wlGczK
+// https://www.shadertoy.com/view/WldfDS
+
 @Suppress("ConstantConditionIf")
 fun main() {
     val videoCaptureMode = true
@@ -32,11 +36,11 @@ fun main() {
         configure {
             width = 960
             height = 540
-            title = if (videoCaptureMode) "Video recording" else "Video Preview"
+            title = if (videoCaptureMode) "Video rendering" else "Video Preview"
         }
         program {
             val sceneSetup: SceneSetup
-            sceneSetup = TrackSceneSetup.b41sqwa02v1
+            sceneSetup = TrackSceneSetup.pgysztjd
 //            sceneSetup = MixSceneSetup.EDM
 
             extend(Screenshots()) {
@@ -67,7 +71,9 @@ fun main() {
             @Suppress("USELESS_IS_CHECK") val renderer: SceneRenderer = when (sceneSetup) {
                 is MixSceneSetup -> EdmScene.fromMixScene(sceneSetup, width, height, contentScale)
                 is TrackSceneSetup -> ImpossibleMission.fromTrackScene(sceneSetup, width, height, contentScale)
-                else -> throw IllegalStateException()
+                else -> {
+                    throw IllegalStateException()
+                }
             }
 
             if (!videoCaptureMode) {

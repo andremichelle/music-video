@@ -47,7 +47,7 @@ class ImpossibleMission(
                 scene.createAudioTransform(),
                 TempoEvaluator(TempoEvent.fetch(scene.trackKey), track.bpm)
             ) { _: ImpossibleMission, _: Double -> }
-            renderer.cover = loadImage(track.cover())
+            renderer.cover = loadImage(track.cover(), formatHint = null)
             renderer.shadertoy = scene.shadertoy
             renderer.header = track.name
             renderer.subline = track.authors()
@@ -58,7 +58,7 @@ class ImpossibleMission(
             val playlist = scene.playlist()
             val tracks = playlist.tracks
             val updateTrack = { renderer: ImpossibleMission, track: Playlist.Track ->
-                renderer.cover = loadImage(track.cover())
+                renderer.cover = loadImage(track.cover(), formatHint = null)
                 renderer.shadertoy = scene.shadertoy
                 renderer.header = track.name
                 renderer.subline = track.authors()

@@ -12,6 +12,8 @@
 
 #define FBM_MAX_ITER 10
 
+uniform float peak;
+
 // ----- easingFunct -----//
 float quadin(float t) { return t*t;}
 float quadOut(float t) { return -t*(t-2.0);}
@@ -294,7 +296,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     #endif
 
     // color grading
-    finalColor *= vec3(1.0 ,0.9, 0.98) *1.2;
+    finalColor *= vec3(1.0 ,0.9, 0.98) * 1.2;
 
     fragColor = vec4(finalColor,1.);
 }

@@ -58,10 +58,10 @@ val openrndrFeatures = setOf(
 
 /*  Which version of OPENRNDR and ORX should be used? */
 val openrndrUseSnapshot = false
-val openrndrVersion = if (openrndrUseSnapshot) "0.4.0-SNAPSHOT" else "0.3.44"
+val openrndrVersion = if (openrndrUseSnapshot) "0.4.0-SNAPSHOT" else "0.3.45"
 
 val orxUseSnapshot = false
-val orxVersion = if (orxUseSnapshot) "0.4.0-SNAPSHOT" else "0.3.53"
+val orxVersion = if (orxUseSnapshot) "0.4.0-SNAPSHOT" else "0.3.55"
 
 //<editor-fold desc="This is code for OPENRNDR, no need to edit this .. most of the times">
 val supportedPlatforms = setOf("windows", "macos", "linux-x64", "linux-arm64")
